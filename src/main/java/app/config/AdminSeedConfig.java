@@ -1,0 +1,13 @@
+package app.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "app.seed.admin")
+public record AdminSeedConfig(
+        boolean enabled,
+        String username,
+        String password,
+        String email,
+        String firstName,
+        String lastName
+) {}
