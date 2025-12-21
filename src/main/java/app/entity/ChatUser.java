@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,7 @@ public class ChatUser implements UserDetails {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @Size(min = 5, max = 30)
     private String username;
 
@@ -37,13 +38,16 @@ public class ChatUser implements UserDetails {
     @Email
     private String email;
 
+    // todo add user profile pic
 //    @Column(nullable = false)
 //    private String picUrl;
 
     @Column(nullable = false)
+    @NotBlank
     private String firstName;
 
     @Column(nullable = false)
+    @NotBlank
     private String lastName;
 
     @Column(nullable = false)
