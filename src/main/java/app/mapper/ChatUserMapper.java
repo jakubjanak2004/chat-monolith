@@ -1,6 +1,7 @@
 package app.mapper;
 
 import app.dto.AuthResponseDTO;
+import app.dto.ChatUserDTO;
 import app.dto.ChatUserUpdateDTO;
 import app.dto.SignUpDTO;
 import app.entity.ChatUser;
@@ -20,13 +21,17 @@ public interface ChatUserMapper {
     @Mapping(source = "token", target = "token")
     AuthResponseDTO toDto(ChatUser user, String token);
 
+    ChatUserDTO toDto(ChatUser user);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "nameNormalized", ignore = true)
     void updateFromDto(ChatUserUpdateDTO chatUserUpdateDTO, @MappingTarget ChatUser user);
 
     @Mapping(target="id", ignore = true)
+    @Mapping(target = "nameNormalized", ignore = true)
     ChatUser toEntity(SignUpDTO signUpDTO);
 }

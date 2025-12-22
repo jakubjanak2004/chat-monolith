@@ -1,9 +1,12 @@
 package app.entity;
 
+import app.util.TextNormalize;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -51,7 +54,16 @@ public class ChatUser implements UserDetails {
     private String lastName;
 
     @Column(nullable = false)
+    private String nameNormalized;
+
+    @Column(nullable = false)
     private String password;
+
+    @PrePersist
+    @PreUpdate
+    void normalizeNames() {
+        this.nameNormalized = TextNormalize.normalize(String.format("%s %s", firstName, lastName));
+    }
 
     @Override
     public String getUsername() {
