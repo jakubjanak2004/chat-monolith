@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,7 @@ public class Chat {
     private List<ChatMembership> chatMemberships = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat")
+    @OrderBy("created ASC")
     @Builder.Default
     private List<Message> messages = new ArrayList<>();
 
