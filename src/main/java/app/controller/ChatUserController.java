@@ -24,12 +24,12 @@ public class ChatUserController {
 
     @PutMapping("/me")
     public ResponseEntity<Void> updateMe(@RequestBody ChatUserUpdateDTO chatUserUpdateDTO, Principal principal) {
-        chatUserService.updateMe(chatUserUpdateDTO, principal);
+        chatUserService.updateUserWithUsername(chatUserUpdateDTO, principal.getName());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
     public ResponseEntity<Page<ChatUserDTO>> getUsersNotMePageable(@RequestParam(required = false) String query, Principal principal, Pageable pageable) {
-        return ResponseEntity.ok(chatUserService.getUsersNotMePageable(query, principal, pageable));
+        return ResponseEntity.ok(chatUserService.getUsersNotUsernamePageable(query, principal.getName(), pageable));
     }
 }

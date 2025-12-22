@@ -7,25 +7,30 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@SuperBuilder
+@NoArgsConstructor
 @Getter
 @Setter
 public abstract class ChatMembership {
     @Id
     @GeneratedValue
-    private UUID id;
+    protected UUID id;
 
     @ManyToOne(optional = false)
     @JoinColumn
-    private ChatUser chatUser;
+    protected ChatUser chatUser;
 
     @ManyToOne(optional = false)
     @JoinColumn
-    private Chat chat;
+    protected Chat chat;
 }

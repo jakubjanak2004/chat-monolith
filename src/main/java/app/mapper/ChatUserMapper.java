@@ -4,6 +4,7 @@ import app.dto.AuthResponseDTO;
 import app.dto.ChatUserDTO;
 import app.dto.ChatUserUpdateDTO;
 import app.dto.SignUpDTO;
+import app.entity.ChatMembership;
 import app.entity.ChatUser;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -36,4 +37,7 @@ public interface ChatUserMapper {
     @Mapping(target = "nameNormalized", ignore = true)
     @Mapping(target = "messages", ignore = true)
     ChatUser toEntity(SignUpDTO signUpDTO);
+
+    @Mapping(source = "chatUser", target = ".")
+    ChatUserDTO fromMembership(ChatMembership membership);
 }

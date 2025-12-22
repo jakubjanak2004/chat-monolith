@@ -11,20 +11,32 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class Message {
     @Id
     @GeneratedValue
     private UUID id;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant created;
 
     @ManyToOne
     @JoinColumn
@@ -39,6 +51,7 @@ public class Message {
     private Message responseTo;
 
     @OneToMany(mappedBy = "responseTo")
+    @Builder.Default
     private List<Message> responses = new ArrayList<>();
 
     @Column(nullable = false, columnDefinition = "TEXT")

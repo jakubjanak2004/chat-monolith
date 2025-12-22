@@ -16,12 +16,12 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, UUID> {
     boolean existsByUsername(String username);
 
     @Query("""
-  select u
-  from ChatUser u
-  where (:query is null or :query = '' or u.nameNormalized like concat('%', :query, '%'))
-    and (:excludeUsername is null or u.username <> :excludeUsername)
-""")
-    Page<ChatUser> searchByNameNormNotMe(
+              select u
+              from ChatUser u
+              where (:query is null or :query = '' or u.nameNormalized like concat('%', :query, '%'))
+                and (:excludeUsername is null or u.username <> :excludeUsername)
+            """)
+    Page<ChatUser> findByNameNormNotUsername(
             @Param("query") String query,
             @Param("excludeUsername") String excludeUsername,
             Pageable pageable
