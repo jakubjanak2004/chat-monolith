@@ -28,12 +28,14 @@ public interface ChatUserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "username", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "hasProfilePicture", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "nameNormalized", ignore = true)
     @Mapping(target = "messages", ignore = true)
     void updateFromDto(ChatUserUpdateDTO chatUserUpdateDTO, @MappingTarget ChatUser user);
 
     @Mapping(target="id", ignore = true)
+    @Mapping(target = "hasProfilePicture", ignore = true)
     @Mapping(target = "nameNormalized", ignore = true)
     @Mapping(target = "messages", ignore = true)
     ChatUser toEntity(SignUpDTO signUpDTO);

@@ -56,6 +56,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         chatUserRepository.save(adminChatUser);
 
         // todo add check for chat users creation
+        // todo add more seeded data
         // creating and saving chat for admin
         List<Chat> chats = List.of(
                 Chat.createChatWithOwnerAndMembers("test chat", adminChatUser, List.of(chatUser)),

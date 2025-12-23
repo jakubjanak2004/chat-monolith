@@ -43,9 +43,9 @@ public class ChatUser implements UserDetails {
     @Email
     private String email;
 
-    // todo add user profile pic
-//    @Column(nullable = false)
-//    private String picUrl;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean hasProfilePicture = false;
 
     @Column(nullable = false)
     @NotBlank

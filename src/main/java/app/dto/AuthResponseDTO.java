@@ -14,4 +14,5 @@ public class AuthResponseDTO {
     private String email;
     private String firstName;
     private String lastName;
+    private Boolean hasProfilePicture;
 }
