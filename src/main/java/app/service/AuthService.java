@@ -55,23 +55,30 @@ public class AuthService {
                 .map(obj -> (ChatUser) obj)
                 .map(chatUser -> {
                     String token = generateToken(chatUser);
-                    return chatUserMapper.toDto(chatUser, token);
+                    return chatUserMapper.toAuthResponseDTO(chatUser, token);
                 }).orElseThrow();
     }
 
-    public AuthResponseDTO signUp(@Valid SignUpDTO signUpDTO) {
-        if (chatUserRepository.existsByUsername(signUpDTO.getUsername())) {
+    public AuthResponseDTO signUp(@Valid SignUpDTO dto) {
+        ensureUsernameAvailable(dto.getUsername());
+
+        ChatUser user = chatUserMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        ChatUser saved = chatUserRepository.save(user);
+
+        eventPublisher.publishEvent(new UserCreatedEvent(saved.getEmail(), saved.getUsername()));
+
+        String token = generateToken(saved);
+        return chatUserMapper.toAuthResponseDTO(saved, token);
+    }
+
+    private void ensureUsernameAvailable(String username) {
+        if (chatUserRepository.existsByUsername(username)) {
             throw new UsernameAlreadyExistsException("Username already taken");
         }
-        // todo refactor - maybe add into the mapper, or mapping logic
-        signUpDTO.setPassword(passwordEncoder.encode(signUpDTO.getPassword()));
-        ChatUser chatUser = chatUserMapper.toEntity(signUpDTO);
-        String token = generateToken(chatUser);
-        chatUserRepository.save(chatUser);
-        // todo use mapper here
-        eventPublisher.publishEvent(new UserCreatedEvent(chatUser.getEmail(), chatUser.getUsername()));
-        return chatUserMapper.toDto(chatUser, token);
     }
+
 
     private String generateToken(UserDetails userDetails) {
         Instant now = Instant.now();

@@ -46,7 +46,7 @@ public class ChatUserService {
     public Page<ChatUserDTO> getUsersNotUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
         return chatUserRepository.findByNameNormNotUsername(queryNormalized, username, pageable)
-                .map(chatUserMapper::toDto);
+                .map(chatUserMapper::toChatUserDTO);
     }
 
     // todo determine if sneakythrows is the right way of handling exceptions here

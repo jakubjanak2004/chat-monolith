@@ -20,9 +20,9 @@ import org.mapstruct.ReportingPolicy;
 public interface ChatUserMapper {
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "token", target = "token")
-    AuthResponseDTO toDto(ChatUser user, String token);
+    AuthResponseDTO toAuthResponseDTO(ChatUser user, String token);
 
-    ChatUserDTO toDto(ChatUser user);
+    ChatUserDTO toChatUserDTO(ChatUser user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
