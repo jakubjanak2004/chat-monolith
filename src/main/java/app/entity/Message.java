@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static app.config.ValidationConstraints.MESSAGE_CONTENT_MAX;
+
 @Entity
 @Builder
 @AllArgsConstructor
@@ -55,6 +57,6 @@ public class Message {
     private List<Message> responses = new ArrayList<>();
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Size(min = 1, max = 4000)
+    @Size(min = 1, max = MESSAGE_CONTENT_MAX)
     private String content;
 }

@@ -1,7 +1,7 @@
 package app.mapper;
 
-import app.dto.CreateMessageDTO;
-import app.dto.MessageDTO;
+import app.dto.request.CreateMessageDTO;
+import app.dto.response.MessageDTO;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.entity.Message;

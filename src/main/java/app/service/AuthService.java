@@ -1,8 +1,8 @@
 package app.service;
 
-import app.dto.AuthResponseDTO;
-import app.dto.LoginDTO;
-import app.dto.SignUpDTO;
+import app.dto.response.AuthResponseDTO;
+import app.dto.request.LoginDTO;
+import app.dto.request.SignUpDTO;
 import app.entity.ChatUser;
 import app.event.UserCreatedEvent;
 import app.exception.UsernameAlreadyExistsException;

@@ -1,7 +1,7 @@
 package app;
 
-import app.config.AdminSeedConfig;
-import app.config.UsersSeedConfig;
+import app.config.AdminSeedProperties;
+import app.config.UsersSeedProperties;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.repository.ChatRepository;
@@ -25,8 +25,8 @@ public class DatabaseInitializer implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializer.class);
     private final ChatUserRepository chatUserRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AdminSeedConfig adminSeedConfig;
-    private final UsersSeedConfig usersSeedConfig;
+    private final AdminSeedProperties adminSeedProperties;
+    private final UsersSeedProperties usersSeedProperties;
     private final ChatUserGenerator chatUserGenerator;
     private final ChatRepository chatRepository;
 
@@ -39,16 +39,16 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
 
     private void createAdmin(ChatUser chatUser) {
-        if (!adminSeedConfig.enabled()) return;
+        if (!adminSeedProperties.enabled()) return;
 
-        if (chatUserRepository.existsByUsername(adminSeedConfig.username())) return;
+        if (chatUserRepository.existsByUsername(adminSeedProperties.username())) return;
 
         ChatUser adminChatUser = ChatUser.builder()
-                .username(adminSeedConfig.username())
-                .password(passwordEncoder.encode(adminSeedConfig.password()))
-                .email(adminSeedConfig.email())
-                .firstName(adminSeedConfig.firstName())
-                .lastName(adminSeedConfig.lastName())
+                .username(adminSeedProperties.username())
+                .password(passwordEncoder.encode(adminSeedProperties.password()))
+                .email(adminSeedProperties.email())
+                .firstName(adminSeedProperties.firstName())
+                .lastName(adminSeedProperties.lastName())
                 .build();
 
         chatUserRepository.save(adminChatUser);
@@ -63,17 +63,17 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         chatRepository.saveAll(chats);
 
-        IntStream.rangeClosed(1, adminSeedConfig.numOfMessages())
+        IntStream.rangeClosed(1, adminSeedProperties.numOfMessages())
                 .forEach(i -> chatUserGenerator.generateMessagesForChat(
                         chats.getFirst(),
-                        adminSeedConfig.messageWordCountFrom(),
-                        adminSeedConfig.messageWordCountTo())
+                        adminSeedProperties.messageWordCountFrom(),
+                        adminSeedProperties.messageWordCountTo())
                 );
     }
 
     private List<ChatUser> createUsers() {
-        if (!usersSeedConfig.enabled()) return List.of();
+        if (!usersSeedProperties.enabled()) return List.of();
 
-        return chatUserGenerator.generateChatUsers(usersSeedConfig.count(), usersSeedConfig.password());
+        return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), usersSeedProperties.password());
     }
 }

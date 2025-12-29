@@ -24,6 +24,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import static app.config.ValidationConstraints.USERNAME_MAX_LENGTH;
+import static app.config.ValidationConstraints.USERNAME_MIN_LENGTH;
+
 @Entity
 @Getter
 @Setter
@@ -36,7 +39,7 @@ public class ChatUser implements UserDetails {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    @Size(min = 5, max = 30)
+    @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH)
     private String username;
 
     @Column(nullable = false)

@@ -1,8 +1,8 @@
 package app.controller;
 
-import app.dto.ChatDTO;
-import app.dto.CreateMessageDTO;
-import app.dto.MessageDTO;
+import app.dto.response.ChatDTO;
+import app.dto.request.CreateMessageDTO;
+import app.dto.response.MessageDTO;
 import app.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties({
-        AdminSeedConfig.class,
-        UsersSeedConfig.class,
+        AdminSeedProperties.class,
+        UsersSeedProperties.class,
         MinioProperties.class
 })
 public class PropsConfig {

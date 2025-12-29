@@ -1,9 +1,9 @@
 package app.mapper;
 
-import app.dto.AuthResponseDTO;
-import app.dto.ChatUserDTO;
-import app.dto.ChatUserUpdateDTO;
-import app.dto.SignUpDTO;
+import app.dto.response.AuthResponseDTO;
+import app.dto.response.ChatUserDTO;
+import app.dto.request.ChatUserUpdateDTO;
+import app.dto.request.SignUpDTO;
 import app.entity.ChatMembership;
 import app.entity.ChatUser;
 import org.mapstruct.BeanMapping;

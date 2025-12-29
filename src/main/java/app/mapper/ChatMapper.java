@@ -1,12 +1,11 @@
 package app.mapper;
 
-import app.dto.ChatDTO;
+import app.dto.response.ChatDTO;
 import app.entity.Chat;
 import app.entity.Message;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(
         componentModel = "spring",

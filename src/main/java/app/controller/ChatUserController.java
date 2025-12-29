@@ -1,8 +1,8 @@
 package app.controller;
 
-import app.dto.ChatUserDTO;
-import app.dto.ChatUserUpdateDTO;
-import app.dto.PictureDTO;
+import app.dto.response.ChatUserDTO;
+import app.dto.request.ChatUserUpdateDTO;
+import app.dto.response.PictureDTO;
 import app.service.ChatUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.security.Principal;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")

@@ -1,8 +1,8 @@
 package app.service;
 
-import app.dto.ChatDTO;
-import app.dto.CreateMessageDTO;
-import app.dto.MessageDTO;
+import app.dto.response.ChatDTO;
+import app.dto.request.CreateMessageDTO;
+import app.dto.response.MessageDTO;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.entity.Message;

@@ -1,9 +1,9 @@
 package app.service;
 
 import app.config.MinioProperties;
-import app.dto.ChatUserDTO;
-import app.dto.ChatUserUpdateDTO;
-import app.dto.PictureDTO;
+import app.dto.response.ChatUserDTO;
+import app.dto.request.ChatUserUpdateDTO;
+import app.dto.response.PictureDTO;
 import app.entity.ChatUser;
 import app.mapper.ChatUserMapper;
 import app.repository.ChatUserRepository;
@@ -26,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
