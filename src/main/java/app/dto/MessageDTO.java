@@ -3,6 +3,7 @@ package app.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -10,5 +11,7 @@ import java.util.UUID;
 public class MessageDTO {
     private UUID id;
     private UUID responseToId;
+    private ChatUserDTO sender;
+    private Instant created;
     private String content;
 }

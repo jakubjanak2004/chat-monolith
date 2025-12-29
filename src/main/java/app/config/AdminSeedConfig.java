@@ -9,5 +9,8 @@ public record AdminSeedConfig(
         String password,
         String email,
         String firstName,
-        String lastName
+        String lastName,
+        int numOfMessages,
+        int messageWordCountFrom,
+        int messageWordCountTo
 ) {}

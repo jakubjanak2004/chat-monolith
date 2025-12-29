@@ -1,7 +1,11 @@
 package app.util;
 
+import app.entity.Chat;
+import app.entity.ChatMembership;
 import app.entity.ChatUser;
+import app.entity.Message;
 import app.repository.ChatUserRepository;
+import app.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -19,6 +23,7 @@ public class ChatUserGenerator {
     private static final Random RANDOM = new Random();
     private final ChatUserRepository chatUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MessageRepository messageRepository;
 
     public ChatUser generateChatUser(String password) {
         ChatUser chatUser = constructNewUser(password);
@@ -47,5 +52,20 @@ public class ChatUserGenerator {
                 .mapToObj(i -> generateChatUser(password))
                 .toList();
         return chatUserRepository.saveAll(chatUserList);
+    }
+
+    public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
+        int wordCount = RANDOM.nextInt(wordCountFrom, wordCountTo + 1);
+        List<ChatUser> chatUsers = chat.getChatMemberships().stream()
+                .map(ChatMembership::getChatUser)
+                .toList();
+        ChatUser chatUser = chatUsers.get(RANDOM.nextInt(chatUsers.size()));
+        return messageRepository.save(
+                Message.builder()
+                        .content(faker.lorem().sentence(wordCount))
+                        .chat(chat)
+                        .chatUser(chatUser)
+                        .build()
+        );
     }
 }

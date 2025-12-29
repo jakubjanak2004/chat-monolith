@@ -4,10 +4,8 @@ import app.config.AdminSeedConfig;
 import app.config.UsersSeedConfig;
 import app.entity.Chat;
 import app.entity.ChatUser;
-import app.entity.Message;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
-import app.repository.MessageRepository;
 import app.util.ChatUserGenerator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,7 +29,6 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final UsersSeedConfig usersSeedConfig;
     private final ChatUserGenerator chatUserGenerator;
     private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
 
     @Override
     public void run(String... args) {
@@ -65,13 +63,12 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         chatRepository.saveAll(chats);
 
-        Message message = Message.builder()
-                .content("test message content")
-                .chat(chats.getFirst())
-                .chatUser(chatUser)
-                .build();
-
-        messageRepository.save(message);
+        IntStream.rangeClosed(1, adminSeedConfig.numOfMessages())
+                .forEach(i -> chatUserGenerator.generateMessagesForChat(
+                        chats.getFirst(),
+                        adminSeedConfig.messageWordCountFrom(),
+                        adminSeedConfig.messageWordCountTo())
+                );
     }
 
     private List<ChatUser> createUsers() {
