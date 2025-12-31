@@ -1,4 +1,4 @@
-package app.config;
+package app.config.props;
 
 public final class ValidationConstraints {
     public static final int MESSAGE_CONTENT_MAX = 4000;

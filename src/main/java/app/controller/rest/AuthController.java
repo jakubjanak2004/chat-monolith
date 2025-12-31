@@ -1,4 +1,4 @@
-package app.controller;
+package app.controller.rest;
 
 import app.dto.response.AuthResponseDTO;
 import app.dto.request.LoginDTO;

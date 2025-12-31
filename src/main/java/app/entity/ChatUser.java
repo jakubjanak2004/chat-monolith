@@ -24,8 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static app.config.ValidationConstraints.USERNAME_MAX_LENGTH;
-import static app.config.ValidationConstraints.USERNAME_MIN_LENGTH;
+import static app.config.props.ValidationConstraints.USERNAME_MAX_LENGTH;
+import static app.config.props.ValidationConstraints.USERNAME_MIN_LENGTH;
 
 @Entity
 @Getter

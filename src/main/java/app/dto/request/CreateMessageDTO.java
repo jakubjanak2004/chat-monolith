@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import static app.config.ValidationConstraints.MESSAGE_CONTENT_MAX;
+import static app.config.props.ValidationConstraints.MESSAGE_CONTENT_MAX;
 
 @Getter
 @AllArgsConstructor

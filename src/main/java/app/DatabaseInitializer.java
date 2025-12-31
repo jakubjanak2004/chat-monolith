@@ -1,7 +1,7 @@
 package app;
 
-import app.config.AdminSeedProperties;
-import app.config.UsersSeedProperties;
+import app.config.props.AdminSeedProperties;
+import app.config.props.UsersSeedProperties;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.repository.ChatRepository;

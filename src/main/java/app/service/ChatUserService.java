@@ -1,6 +1,6 @@
 package app.service;
 
-import app.config.MinioProperties;
+import app.config.props.MinioProperties;
 import app.dto.response.ChatUserDTO;
 import app.dto.request.ChatUserUpdateDTO;
 import app.dto.response.PictureDTO;

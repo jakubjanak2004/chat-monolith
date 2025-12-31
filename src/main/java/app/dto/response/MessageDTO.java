@@ -11,6 +11,7 @@ import java.util.UUID;
 public class MessageDTO {
     private UUID id;
     private UUID responseToId;
+    private UUID chatId;
     private ChatUserDTO sender;
     private Instant created;
     private String content;

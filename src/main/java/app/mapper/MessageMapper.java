@@ -18,6 +18,7 @@ import java.time.Instant;
 public interface MessageMapper {
     @Mapping(source = "responseTo.id", target = "responseToId")
     @Mapping(source = "chatUser", target = "sender")
+    @Mapping(source = "message.chat.id", target = "chatId")
     MessageDTO toDTO(Message message);
 
     @Mapping(target = "id", ignore = true)

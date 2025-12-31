@@ -7,10 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import static app.config.ValidationConstraints.PASSWORD_MAX_LENGTH;
-import static app.config.ValidationConstraints.PASSWORD_MIN_LENGTH;
-import static app.config.ValidationConstraints.USERNAME_MAX_LENGTH;
-import static app.config.ValidationConstraints.USERNAME_MIN_LENGTH;
+import static app.config.props.ValidationConstraints.PASSWORD_MAX_LENGTH;
+import static app.config.props.ValidationConstraints.PASSWORD_MIN_LENGTH;
+import static app.config.props.ValidationConstraints.USERNAME_MAX_LENGTH;
+import static app.config.props.ValidationConstraints.USERNAME_MIN_LENGTH;
 
 @Getter
 @Setter
