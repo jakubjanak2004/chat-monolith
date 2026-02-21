@@ -1,7 +1,7 @@
 package app.enumeration;
 
 public enum MembershipType {
-    OWNER,
+    ADMIN,
     EDITOR,
     MEMBER
 }

@@ -1,7 +1,8 @@
 package app.service;
 
-import app.dto.response.ChatDTO;
+import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
+import app.dto.response.ChatDTO;
 import app.dto.response.MessageDTO;
 import app.entity.Chat;
 import app.entity.ChatUser;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,16 +42,9 @@ public class ChatService {
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
+        // todo find chats by ActiveMemberships so that no invitations are loaded
         return chatRepository.findByNameNormAndUsername(queryNormalized, username, pageable)
-                .map(chat -> {
-                    Message lastMessage = messageRepository.findAllByChat(
-                                    chat,
-                                    PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "created"))
-                            ).stream()
-                            .findFirst()
-                            .orElse(null);
-                    return chatMapper.toDTO(chat, lastMessage);
-                });
+                .map(this::fromChatToDTO);
     }
 
     public Page<MessageDTO> getMessagesForChatPageable(UUID chatId, Pageable pageable) {
@@ -70,5 +65,50 @@ public class ChatService {
                 })
                 .map(messageMapper::toDTO)
                 .orElseThrow();
+    }
+
+    public ChatDTO getChatIdOfChatWithPerson(String otherUsername, String ownerUsername) {
+        ChatUser chatUser = chatUserRepository.findByUsername(ownerUsername).orElseThrow();
+        ChatUser otherUser = chatUserRepository.findByUsername(otherUsername).orElseThrow();
+        return chatRepository.findChatsWithExactlyParticipants(List.of(chatUser.getUsername(), otherUser.getUsername()))
+                .stream()
+                .map(this::fromChatToDTO)
+                .toList().getFirst();
+    }
+
+    public ChatDTO createChatForUser(@Valid CreateChatDTO dto, String ownerUsername) {
+        ChatUser owner = chatUserRepository.findByUsername(ownerUsername)
+                .orElseThrow();
+
+        // normalize list: trim, remove blanks, distinct, and don't include owner
+        List<String> usernames = dto.getMembersList().stream()
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .distinct()
+                .filter(u -> !u.equals(ownerUsername))
+                .toList();
+
+        // load ChatUser entities for members
+        List<ChatUser> members = chatUserRepository.findAllByUsernameIn(usernames);
+
+        // validate all exist
+        if (members.size() != usernames.size()) {
+            throw new IllegalArgumentException("Some usernames do not exist.");
+        }
+
+        Chat chat = Chat.createChatWithOwnerAndMembers(dto.getName(), owner, members);
+
+        Chat saved = chatRepository.save(chat);
+        return chatMapper.toDTO(saved, null);
+    }
+
+    private ChatDTO fromChatToDTO(Chat chat) {
+        Message lastMessage = messageRepository.findAllByChat(
+                        chat,
+                        PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "created"))
+                ).stream()
+                .findFirst()
+                .orElse(null);
+        return chatMapper.toDTO(chat, lastMessage);
     }
 }

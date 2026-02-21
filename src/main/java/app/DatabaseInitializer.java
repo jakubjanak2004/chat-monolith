@@ -34,7 +34,9 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) {
         LOGGER.info("Seeding database...");
         List<ChatUser> chatUsers = createUsers();
-        createAdmin(chatUsers.getFirst());
+        ChatUser firstChatUser = chatUsers.getFirst();
+        LOGGER.info("firstChatUser: {}", firstChatUser);
+        createAdmin(firstChatUser);
         LOGGER.info("Seeding finished");
     }
 
@@ -58,7 +60,14 @@ public class DatabaseInitializer implements CommandLineRunner {
         // creating and saving chat for admin
         List<Chat> chats = List.of(
                 Chat.createChatWithOwnerAndMembers("test chat", adminChatUser, List.of(chatUser)),
-                Chat.createChatWithOwnerAndMembers("test chat 2", adminChatUser, List.of(chatUser))
+                Chat.createChatWithOwnerAndMembers("test chat 2", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 3", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 4", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 5", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 6", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 7", adminChatUser, List.of(chatUser)),
+                Chat.createChatWithOwnerAndMembers("test chat 8", adminChatUser, List.of(chatUser))
+
         );
 
         chatRepository.saveAll(chats);
@@ -74,6 +83,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private List<ChatUser> createUsers() {
         if (!usersSeedProperties.enabled()) return List.of();
 
+        // todo add profile pic to users
         return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), usersSeedProperties.password());
     }
 }

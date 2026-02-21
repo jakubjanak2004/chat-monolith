@@ -7,7 +7,8 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({
         AdminSeedProperties.class,
         UsersSeedProperties.class,
-        MinioProperties.class
+        MinioProperties.class,
+        SecurityProperties.class
 })
 public class PropsConfig {
 }

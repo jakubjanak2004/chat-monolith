@@ -67,10 +67,18 @@ public class ChatUser implements UserDetails {
     @OneToMany(mappedBy = "chatUser")
     private List<Message> messages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "chatUser")
+    private List<ChatMembership> chatMemberships = new ArrayList<>();
+
     @PrePersist
     @PreUpdate
     void normalizeNames() {
         this.nameNormalized = TextNormalize.normalize(String.format("%s %s", firstName, lastName));
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ChatUser{username=%s}", username);
     }
 
     @Override

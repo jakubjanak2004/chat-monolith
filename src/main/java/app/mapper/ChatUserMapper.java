@@ -1,9 +1,9 @@
 package app.mapper;
 
-import app.dto.response.AuthResponseDTO;
-import app.dto.response.ChatUserDTO;
 import app.dto.request.ChatUserUpdateDTO;
 import app.dto.request.SignUpDTO;
+import app.dto.response.AuthResponseDTO;
+import app.dto.response.ChatUserDTO;
 import app.entity.ChatMembership;
 import app.entity.ChatUser;
 import org.mapstruct.BeanMapping;
@@ -32,12 +32,14 @@ public interface ChatUserMapper {
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "nameNormalized", ignore = true)
     @Mapping(target = "messages", ignore = true)
+    @Mapping(target = "chatMemberships", ignore = true)
     void updateFromDto(ChatUserUpdateDTO chatUserUpdateDTO, @MappingTarget ChatUser user);
 
-    @Mapping(target="id", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "hasProfilePicture", ignore = true)
     @Mapping(target = "nameNormalized", ignore = true)
     @Mapping(target = "messages", ignore = true)
+    @Mapping(target = "chatMemberships", ignore = true)
     ChatUser toEntity(SignUpDTO signUpDTO);
 
     @Mapping(source = "chatUser", target = ".")

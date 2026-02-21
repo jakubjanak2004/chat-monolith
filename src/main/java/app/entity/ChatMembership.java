@@ -7,6 +7,8 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,16 +23,20 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(
+        name = "chat_membership",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "chat_user_id"})
+)
 public abstract class ChatMembership {
     @Id
     @GeneratedValue
     protected UUID id;
 
     @ManyToOne(optional = false)
-    @JoinColumn
+    @JoinColumn(name = "chat_user_id", nullable = false)
     protected ChatUser chatUser;
 
     @ManyToOne(optional = false)
-    @JoinColumn
+    @JoinColumn(name = "chat_id", nullable = false)
     protected Chat chat;
 }

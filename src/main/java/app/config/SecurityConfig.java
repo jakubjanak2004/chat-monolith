@@ -1,5 +1,6 @@
 package app.config;
 
+import app.config.props.SecurityProperties;
 import app.exception.UsernameNotFoundException;
 import app.repository.ChatUserRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -16,7 +17,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -36,6 +37,8 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final SecurityProperties securityProperties;
+    // todo think about moving these into security properties
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
@@ -93,7 +96,13 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new Argon2PasswordEncoder(
+                securityProperties.saltLength(),
+                securityProperties.hashLength(),
+                securityProperties.parallelism(),
+                securityProperties.memoryKb(),
+                securityProperties.iterations()
+        );
     }
 
     @Bean

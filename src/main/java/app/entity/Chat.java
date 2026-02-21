@@ -59,7 +59,7 @@ public class Chat {
                 .build();
 
         ChatMembership ownerMembership = ActiveMembership.builder()
-                .membershipType(MembershipType.OWNER)
+                .membershipType(MembershipType.ADMIN)
                 .chatUser(owner)
                 .chat(chat)
                 .build();

@@ -1,5 +1,6 @@
 package app.controller.rest;
 
+import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
 import app.dto.response.ChatDTO;
 import app.dto.response.MessageDTO;
@@ -34,6 +35,11 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getChatsForUsernamePageable(query, principal.getName(), pageable));
     }
 
+    @PostMapping("/me")
+    public ResponseEntity<ChatDTO> createChat(@RequestBody CreateChatDTO createChatDTO, Principal principal) {
+        return ResponseEntity.ok(chatService.createChatForUser(createChatDTO, principal.getName()));
+    }
+
     @GetMapping("/{chatId}/messages")
     public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, Pageable pageable) {
         LOGGER.info("GET /chats/{}/messages?page={}&size={}&sort={}",
@@ -45,5 +51,12 @@ public class ChatController {
     public ResponseEntity<MessageDTO> createMessage(@PathVariable UUID chatId, @RequestBody CreateMessageDTO messageDTO, Principal principal) {
         LOGGER.info("POST /chats/{}/messages", chatId);
         return ResponseEntity.ok(chatService.createMessageForChat(chatId, messageDTO, principal.getName()));
+    }
+
+    // todo use to check if chat is present
+    @GetMapping("/me/person/{username}")
+    public ResponseEntity<ChatDTO> getChatIdOfChatWithPerson(@PathVariable String username, Principal principal) {
+        LOGGER.info("GET /me/person/{}/id", username);
+        return ResponseEntity.ok(chatService.getChatIdOfChatWithPerson(username, principal.getName()));
     }
 }

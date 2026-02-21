@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, UUID> {
     Optional<ChatUser> findByUsername(String username);
 
     boolean existsByUsername(String username);
+    List<ChatUser> findAllByUsernameIn(Collection<String> usernames);
 
     @Query("""
               select u
@@ -26,5 +29,4 @@ public interface ChatUserRepository extends JpaRepository<ChatUser, UUID> {
             @Param("excludeUsername") String excludeUsername,
             Pageable pageable
     );
-
 }
