@@ -55,26 +55,20 @@ public class ChatService {
 
     public MessageDTO createMessageForChat(UUID chatId, @Valid CreateMessageDTO messageDTO, String username) {
         ChatUser chatUser = chatUserRepository.findByUsername(username).orElseThrow();
-        Chat chat = chatRepository.findById(chatId).orElseThrow();
-        return Optional.of(messageDTO)
-                .map(dto -> messageMapper.toEntity(dto, chat, chatUser, Instant.now()))
-                .map(message -> {
-                    if (messageDTO.getReplyToId() != null) {
-                        Message replyTo = messageRepository
-                                .findById(messageDTO.getReplyToId())
-                                .orElseThrow();
 
-                        message.setResponseTo(replyTo);
-                    }
-                    return message;
-                })
-                .map(messageRepository::save)
-                .map(message -> {
-                    eventPublisher.publishEvent(new MessageCreatedEvent(message.getId(), chatId));
-                    return message;
-                })
-                .map(messageMapper::toDTO)
-                .orElseThrow();
+        Chat chat = chatRepository.findById(chatId).orElseThrow();
+
+        Message message = messageMapper.toEntity(messageDTO, chat, chatUser, Instant.now());
+
+        if (messageDTO.getReplyToId() != null) {
+            Message replyTo = messageRepository.findById(messageDTO.getReplyToId()).orElseThrow();
+            message.setResponseTo(replyTo);
+        }
+
+        Message saved = messageRepository.save(message);
+        eventPublisher.publishEvent(new MessageCreatedEvent(saved.getId(), chatId));
+
+        return messageMapper.toDTO(saved);
     }
 
     public ChatDTO getChatIdOfChatWithPerson(String otherUsername, String ownerUsername) {
