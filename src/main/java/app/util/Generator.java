@@ -7,20 +7,21 @@ import app.entity.Message;
 import app.repository.ChatUserRepository;
 import app.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import net.datafaker.Faker;
 
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class ChatUserGenerator {
+public class Generator {
     private static final Faker faker = new Faker(Locale.forLanguageTag("sk"));
-    private static final Random RANDOM = new Random();
     private final ChatUserRepository chatUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final MessageRepository messageRepository;
@@ -55,14 +56,26 @@ public class ChatUserGenerator {
     }
 
     public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
-        int wordCount = RANDOM.nextInt(wordCountFrom, wordCountTo + 1);
+        int wordCount = ThreadLocalRandom.current().nextInt(wordCountFrom, wordCountTo + 1);
         List<ChatUser> chatUsers = chat.getChatMemberships().stream()
                 .map(ChatMembership::getChatUser)
                 .toList();
-        ChatUser chatUser = chatUsers.get(RANDOM.nextInt(chatUsers.size()));
+        ChatUser chatUser = chatUsers.get(ThreadLocalRandom.current().nextInt(chatUsers.size()));
+        Message responseTo = null;
+        if (ThreadLocalRandom.current().nextBoolean()) {
+            Page<Message> previousMessages =
+                    messageRepository.findAllByChat(chat, PageRequest.of(0, 10));
+
+            if (previousMessages.hasContent()) {
+                List<Message> content = previousMessages.getContent();
+                int idx = ThreadLocalRandom.current().nextInt(content.size());
+                responseTo = content.get(idx);
+            }
+        }
         return messageRepository.save(
                 Message.builder()
                         .content(faker.lorem().sentence(wordCount))
+                        .responseTo(responseTo)
                         .chat(chat)
                         .chatUser(chatUser)
                         .build()

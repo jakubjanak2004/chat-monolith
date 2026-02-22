@@ -6,7 +6,7 @@ import app.entity.Chat;
 import app.entity.ChatUser;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
-import app.util.ChatUserGenerator;
+import app.util.Generator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final AdminSeedProperties adminSeedProperties;
     private final UsersSeedProperties usersSeedProperties;
-    private final ChatUserGenerator chatUserGenerator;
+    private final Generator chatUserGenerator;
     private final ChatRepository chatRepository;
 
     @Override

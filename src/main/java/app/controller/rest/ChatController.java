@@ -48,9 +48,15 @@ public class ChatController {
     }
 
     @PostMapping("/{chatId}/messages")
-    public ResponseEntity<MessageDTO> createMessage(@PathVariable UUID chatId, @RequestBody CreateMessageDTO messageDTO, Principal principal) {
+    public ResponseEntity<MessageDTO> createMessage(@PathVariable UUID chatId, @RequestBody CreateMessageDTO createMessageDTO, Principal principal) {
         LOGGER.info("POST /chats/{}/messages", chatId);
-        return ResponseEntity.ok(chatService.createMessageForChat(chatId, messageDTO, principal.getName()));
+        return ResponseEntity.ok(chatService.createMessageForChat(chatId, createMessageDTO, principal.getName()));
+    }
+
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<MessageDTO> getMessage(@PathVariable UUID messageId) {
+        LOGGER.info("GET /chats/messages/{}", messageId);
+        return ResponseEntity.ok(chatService.getMessage(messageId));
     }
 
     // todo use to check if chat is present

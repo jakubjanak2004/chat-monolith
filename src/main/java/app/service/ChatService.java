@@ -58,6 +58,16 @@ public class ChatService {
         Chat chat = chatRepository.findById(chatId).orElseThrow();
         return Optional.of(messageDTO)
                 .map(dto -> messageMapper.toEntity(dto, chat, chatUser, Instant.now()))
+                .map(message -> {
+                    if (messageDTO.getReplyToId() != null) {
+                        Message replyTo = messageRepository
+                                .findById(messageDTO.getReplyToId())
+                                .orElseThrow();
+
+                        message.setResponseTo(replyTo);
+                    }
+                    return message;
+                })
                 .map(messageRepository::save)
                 .map(message -> {
                     eventPublisher.publishEvent(new MessageCreatedEvent(message.getId(), chatId));
@@ -100,6 +110,12 @@ public class ChatService {
 
         Chat saved = chatRepository.save(chat);
         return chatMapper.toDTO(saved, null);
+    }
+
+    public MessageDTO getMessage(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .map(messageMapper::toDTO)
+                .orElseThrow();
     }
 
     private ChatDTO fromChatToDTO(Chat chat) {
