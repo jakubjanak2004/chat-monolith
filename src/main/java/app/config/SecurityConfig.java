@@ -59,6 +59,13 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         // get for user profile picture, no authentication required
                         .requestMatchers(HttpMethod.GET, "/users/{username}/profile-picture").permitAll()
+                        // allow all for openAPI endpoints
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        // any other request authenticated
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
                 .build();

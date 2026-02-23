@@ -1,12 +1,13 @@
 package app.controller.rest;
 
-import app.dto.response.ChatUserDTO;
 import app.dto.request.ChatUserUpdateDTO;
+import app.dto.response.ChatUserDTO;
 import app.dto.response.PictureDTO;
 import app.service.ChatUserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -33,27 +34,27 @@ public class ChatUserController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatUserController.class);
     private final ChatUserService chatUserService;
 
-    @PutMapping("/me")
+    @PutMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateMe(@RequestBody ChatUserUpdateDTO chatUserUpdateDTO, Principal principal) {
         LOGGER.info("PUT /users/me");
         chatUserService.updateUserWithUsername(chatUserUpdateDTO, principal.getName());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<Page<ChatUserDTO>> getUsersNotMePageable(@RequestParam(required = false) String query, Principal principal, Pageable pageable) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ChatUserDTO>> getUsersNotMePageable(@RequestParam(required = false) String query, Principal principal, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /users?query={}&page={}&size={}&sort={}", query, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         return ResponseEntity.ok(chatUserService.getUsersNotUsernamePageable(query, principal.getName(), pageable));
     }
 
-    @PutMapping("/me/profile-picture")
-    public ResponseEntity<Void> updateMyProfilePicture(@RequestPart("file") MultipartFile file, Principal principal) {
+    @PutMapping(value = "/me/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateMyProfilePicture(@RequestPart(value = "file") MultipartFile file, Principal principal) {
         LOGGER.info("PUT /users/me/profile-picture");
         chatUserService.updateUserProfilePicture(file, principal.getName());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{username}/profile-picture")
+    @GetMapping(value = "/{username}/profile-picture", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource> getUsersProfilePicture(@PathVariable String username) {
         LOGGER.info("GET /users/{}/profile-picture", username);
         PictureDTO pic = chatUserService.getProfilePictureForUsername(username);

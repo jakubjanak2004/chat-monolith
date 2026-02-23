@@ -8,8 +8,10 @@ import app.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,38 +31,38 @@ public class ChatController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
     private final ChatService chatService;
 
-    @GetMapping("/me")
-    public ResponseEntity<Page<ChatDTO>> getChatsForMe(@RequestParam(required = false) String query, Principal principal, Pageable pageable) {
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ChatDTO>> getChatsForMe(@RequestParam(required = false) String query, Principal principal, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /chats/me?query={}", query);
         return ResponseEntity.ok(chatService.getChatsForUsernamePageable(query, principal.getName(), pageable));
     }
 
-    @PostMapping("/me")
+    @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> createChat(@RequestBody CreateChatDTO createChatDTO, Principal principal) {
         return ResponseEntity.ok(chatService.createChatForUser(createChatDTO, principal.getName()));
     }
 
-    @GetMapping("/{chatId}/messages")
-    public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, Pageable pageable) {
+    @GetMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /chats/{}/messages?page={}&size={}&sort={}",
                 chatId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         return ResponseEntity.ok(chatService.getMessagesForChatPageable(chatId, pageable));
     }
 
-    @PostMapping("/{chatId}/messages")
+    @PostMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MessageDTO> createMessage(@PathVariable UUID chatId, @RequestBody CreateMessageDTO createMessageDTO, Principal principal) {
         LOGGER.info("POST /chats/{}/messages", chatId);
         return ResponseEntity.ok(chatService.createMessageForChat(chatId, createMessageDTO, principal.getName()));
     }
 
-    @GetMapping("/messages/{messageId}")
+    @GetMapping(value = "/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MessageDTO> getMessage(@PathVariable UUID messageId) {
         LOGGER.info("GET /chats/messages/{}", messageId);
         return ResponseEntity.ok(chatService.getMessage(messageId));
     }
 
     // todo use to check if chat is present
-    @GetMapping("/me/person/{username}")
+    @GetMapping(value = "/me/person/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> getChatIdOfChatWithPerson(@PathVariable String username, Principal principal) {
         LOGGER.info("GET /me/person/{}/id", username);
         return ResponseEntity.ok(chatService.getChatIdOfChatWithPerson(username, principal.getName()));
