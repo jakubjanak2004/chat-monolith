@@ -1,4 +1,4 @@
-package app.controller.rest;
+package app.controller;
 
 import app.dto.request.LoginDTO;
 import app.dto.request.SignUpDTO;

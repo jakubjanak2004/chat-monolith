@@ -1,4 +1,4 @@
-package app.controller.rest;
+package app.controller;
 
 import app.dto.request.ChatUserUpdateDTO;
 import app.dto.response.ChatUserDTO;

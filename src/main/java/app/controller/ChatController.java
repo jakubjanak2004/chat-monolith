@@ -1,4 +1,4 @@
-package app.controller.rest;
+package app.controller;
 
 import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
