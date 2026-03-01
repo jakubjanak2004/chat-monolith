@@ -1,8 +1,11 @@
 package app.controller;
 
+import app.dto.request.ActiveMembershipUpdateDTO;
 import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
+import app.dto.request.GiveUpAdminDTO;
 import app.dto.response.ChatDTO;
+import app.dto.response.ActiveMembershipDTO;
 import app.dto.response.MessageDTO;
 import app.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +19,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,6 +45,30 @@ public class ChatController {
     @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> createChat(@RequestBody CreateChatDTO createChatDTO, Principal principal) {
         return ResponseEntity.ok(chatService.createChatForUser(createChatDTO, principal.getName()));
+    }
+
+    @GetMapping(value="/{chatId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ChatDTO> getChat(@PathVariable UUID chatId) {
+        LOGGER.info("GET /chats/{}", chatId);
+        return ResponseEntity.ok(chatService.getChatById(chatId));
+    }
+
+    @PostMapping(value="/{chatId}/admin/transfer")
+    public ResponseEntity<Void> giveUpAdminMembership(@PathVariable UUID chatId, Principal principal, @RequestBody GiveUpAdminDTO giveUpAdminDTO) {
+        chatService.giveUpAdminMembership(chatId, principal.getName(), giveUpAdminDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/{chatId}/memberships", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ActiveMembershipDTO>> getMembershipsForChat(@PathVariable UUID chatId) {
+        LOGGER.info("GET /chats/{}/memberships", chatId);
+        return ResponseEntity.ok(chatService.getActiveMembershipsForChat(chatId));
+    }
+
+    @PutMapping(value = "/{chatId}/memberships/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> updateMembershipRole(@PathVariable UUID chatId, @PathVariable String username, @RequestBody ActiveMembershipUpdateDTO activeMembershipUpdateDTO) {
+        chatService.updateMembershipRole(chatId, username, activeMembershipUpdateDTO);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,7 +90,6 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getMessage(messageId));
     }
 
-    // todo use to check if chat is present
     @GetMapping(value = "/me/person/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> getChatIdOfChatWithPerson(@PathVariable String username, Principal principal) {
         LOGGER.info("GET /me/person/{}/id", username);

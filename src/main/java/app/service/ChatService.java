@@ -1,15 +1,22 @@
 package app.service;
 
+import app.dto.request.ActiveMembershipUpdateDTO;
 import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
+import app.dto.request.GiveUpAdminDTO;
 import app.dto.response.ChatDTO;
+import app.dto.response.ActiveMembershipDTO;
 import app.dto.response.MessageDTO;
+import app.entity.ActiveMembership;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.entity.Message;
+import app.enumeration.MembershipType;
 import app.event.MessageCreatedEvent;
+import app.mapper.ActiveMembershipMapper;
 import app.mapper.ChatMapper;
 import app.mapper.MessageMapper;
+import app.repository.ActiveMembershipRepository;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
 import app.repository.MessageRepository;
@@ -26,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +47,8 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final ChatUserRepository chatUserRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ActiveMembershipRepository activeMembershipRepository;
+    private final ActiveMembershipMapper activeMembershipMapper;
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
@@ -120,5 +130,59 @@ public class ChatService {
                 .findFirst()
                 .orElse(null);
         return chatMapper.toDTO(chat, lastMessage);
+    }
+
+    public ChatDTO getChatById(UUID chatId) {
+        return chatRepository.findById(chatId)
+                .map(this::fromChatToDTO)
+                .orElseThrow();
+    }
+
+    public List<ActiveMembershipDTO> getActiveMembershipsForChat(UUID chatId) {
+        return activeMembershipRepository.findByChat_Id(chatId)
+                .stream()
+                .map(activeMembershipMapper::toDTO)
+                .toList();
+    }
+
+    public void updateMembershipRole(UUID chatId, String username, @Valid ActiveMembershipUpdateDTO activeMembershipUpdateDTO) {
+        activeMembershipRepository.findFirstByChat_IdAndChatUser_Username(chatId, username)
+                .ifPresent(activeMembership -> activeMembershipMapper.updateFromDTO(activeMembershipUpdateDTO, activeMembership));
+    }
+
+    public void giveUpAdminMembership(UUID chatId, String username, @Valid GiveUpAdminDTO giveUpAdminDTO) {
+        ActiveMembership me = activeMembershipRepository
+                .findFirstByChat_IdAndChatUser_Username(chatId, username)
+                .orElseThrow(() -> new NoSuchElementException("Membership not found"));
+
+        if (me.getMembershipType() != MembershipType.ADMIN) {
+            throw new IllegalStateException("Only admin can give up admin role");
+        }
+
+        long adminCount = activeMembershipRepository.countByChat_IdAndMembershipType(chatId, MembershipType.ADMIN);
+
+        // If there are other admins, just demote
+        if (adminCount >= 2) {
+            me.setMembershipType(MembershipType.EDITOR);
+            return;
+        }
+
+        String successorUsername = Optional.ofNullable(giveUpAdminDTO.getSuccessorUsername())
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Successor is required when you are the only ADMIN"
+                ));
+
+        if (successorUsername.equals(username)) {
+            throw new IllegalArgumentException("Successor cannot be yourself");
+        }
+
+        ActiveMembership successor = activeMembershipRepository
+                .findFirstByChat_IdAndChatUser_Username(chatId, successorUsername)
+                .orElseThrow(() -> new NoSuchElementException("Successor not in chat"));
+
+        successor.setMembershipType(MembershipType.ADMIN);
+        me.setMembershipType(MembershipType.EDITOR);
     }
 }
