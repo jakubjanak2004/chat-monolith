@@ -2,19 +2,20 @@ package app.dto.response;
 
 import app.enumeration.MembershipType;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 public class ActiveMembershipDTO {
-    @NonNull
+    @NotNull
     private UUID id;
     @Valid
+    @NotNull
     private ChatUserDTO chatUser;
-    @NonNull
+    @NotNull
     private MembershipType membershipType;
 }
