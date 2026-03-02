@@ -66,6 +66,12 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getActiveMembershipsForChat(chatId));
     }
 
+    @PostMapping(value = "/{chatId}/memberships/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> inviteChatUser(@PathVariable UUID chatId, @PathVariable String username) {
+        chatService.inviteChatUser(chatId, username);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping(value = "/{chatId}/memberships/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteMembership(@PathVariable UUID chatId, @PathVariable String username) {
         chatService.deleteMembershipFromChat(chatId, username);

@@ -11,6 +11,7 @@ import app.entity.ActiveMembership;
 import app.entity.Chat;
 import app.entity.ChatMembership;
 import app.entity.ChatUser;
+import app.entity.Invitation;
 import app.entity.Message;
 import app.enumeration.MembershipType;
 import app.event.MessageCreatedEvent;
@@ -21,6 +22,7 @@ import app.repository.ActiveMembershipRepository;
 import app.repository.ChatMembershipRepository;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
+import app.repository.InvitationRepository;
 import app.repository.MessageRepository;
 import app.util.TextNormalize;
 import jakarta.validation.Valid;
@@ -52,6 +54,7 @@ public class ChatService {
     private final ActiveMembershipRepository activeMembershipRepository;
     private final ActiveMembershipMapper activeMembershipMapper;
     private final ChatMembershipRepository chatMembershipRepository;
+    private final InvitationRepository invitationRepository;
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
@@ -193,5 +196,23 @@ public class ChatService {
         ChatMembership chatMembership = chatMembershipRepository.findByChat_IdAndChatUser_Username(chatId, username)
                 .orElseThrow();
         chatMembershipRepository.delete(chatMembership);
+    }
+
+    public void inviteChatUser(UUID chatId, String username) {
+        Chat chat = chatRepository.findById(chatId).orElseThrow();
+        ChatUser user = chatUserRepository.findByUsername(username).orElseThrow();
+
+        boolean alreadyMember = chatMembershipRepository
+                .existsByChat_IdAndChatUser_Username(chatId, username);
+        if (alreadyMember) {
+            throw new IllegalStateException("User is already a member of this chat");
+        }
+
+        Invitation invitation = Invitation.builder()
+                .chat(chat)
+                .chatUser(user)
+                .build();
+
+        invitationRepository.save(invitation);
     }
 }

@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ChatMembershipRepository extends JpaRepository<ChatMembership, UUID> {
     Optional<ChatMembership> findByChat_IdAndChatUser_Username(UUID chatId, String username);
+    boolean existsByChat_IdAndChatUser_Username(UUID chatId, String username);
 }
