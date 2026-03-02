@@ -9,6 +9,7 @@ import app.dto.response.ActiveMembershipDTO;
 import app.dto.response.MessageDTO;
 import app.entity.ActiveMembership;
 import app.entity.Chat;
+import app.entity.ChatMembership;
 import app.entity.ChatUser;
 import app.entity.Message;
 import app.enumeration.MembershipType;
@@ -17,6 +18,7 @@ import app.mapper.ActiveMembershipMapper;
 import app.mapper.ChatMapper;
 import app.mapper.MessageMapper;
 import app.repository.ActiveMembershipRepository;
+import app.repository.ChatMembershipRepository;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
 import app.repository.MessageRepository;
@@ -49,6 +51,7 @@ public class ChatService {
     private final ApplicationEventPublisher eventPublisher;
     private final ActiveMembershipRepository activeMembershipRepository;
     private final ActiveMembershipMapper activeMembershipMapper;
+    private final ChatMembershipRepository chatMembershipRepository;
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
@@ -184,5 +187,11 @@ public class ChatService {
 
         successor.setMembershipType(MembershipType.ADMIN);
         me.setMembershipType(MembershipType.EDITOR);
+    }
+
+    public void deleteMembershipFromChat(UUID chatId, String username) {
+        ChatMembership chatMembership = chatMembershipRepository.findByChat_IdAndChatUser_Username(chatId, username)
+                .orElseThrow();
+        chatMembershipRepository.delete(chatMembership);
     }
 }
