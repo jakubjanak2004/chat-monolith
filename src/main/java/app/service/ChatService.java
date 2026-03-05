@@ -6,6 +6,8 @@ import app.dto.request.CreateMessageDTO;
 import app.dto.request.GiveUpAdminDTO;
 import app.dto.response.ChatDTO;
 import app.dto.response.ActiveMembershipDTO;
+import app.dto.response.InvitationDTO;
+import app.dto.response.UserInvitationsDTO;
 import app.dto.response.MessageDTO;
 import app.entity.ActiveMembership;
 import app.entity.Chat;
@@ -17,6 +19,7 @@ import app.enumeration.MembershipType;
 import app.event.MessageCreatedEvent;
 import app.mapper.ActiveMembershipMapper;
 import app.mapper.ChatMapper;
+import app.mapper.InvitationMapper;
 import app.mapper.MessageMapper;
 import app.repository.ActiveMembershipRepository;
 import app.repository.ChatMembershipRepository;
@@ -55,6 +58,7 @@ public class ChatService {
     private final ActiveMembershipMapper activeMembershipMapper;
     private final ChatMembershipRepository chatMembershipRepository;
     private final InvitationRepository invitationRepository;
+    private final InvitationMapper invitationMapper;
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
@@ -214,5 +218,40 @@ public class ChatService {
                 .build();
 
         invitationRepository.save(invitation);
+    }
+
+    public List<UserInvitationsDTO> getInvitationsForMe(String username) {
+        return invitationRepository.findAllByChatUser_Username(username)
+                .stream()
+                .map(invitationMapper::toUserInvitationsDTO)
+                .toList();
+    }
+
+    public void deleteInvitationWithId(UUID invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId).orElseThrow();
+        invitationRepository.delete(invitation);
+    }
+
+    public void acceptInvitationWithId(UUID invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId).orElseThrow();
+        invitationRepository.delete(invitation);
+        invitationRepository.flush();
+        ActiveMembership activeMembership = ActiveMembership.builder()
+                .chat(invitation.getChat())
+                .chatUser(invitation.getChatUser())
+                .membershipType(MembershipType.MEMBER)
+                .build();
+        activeMembershipRepository.save(activeMembership);
+    }
+
+    public List<InvitationDTO> getInvitationsForChat(UUID chatId) {
+        return invitationRepository.findAllByChat_Id(chatId).stream()
+                .map(invitationMapper::toInvitationDTO)
+                .toList();
+    }
+
+    public void deleteInvitationForChatWithUser(UUID chatId, String username) {
+        Invitation invitation = invitationRepository.findFirstByChat_IdAndChatUser_Username(chatId, username).orElseThrow();
+        invitationRepository.delete(invitation);
     }
 }

@@ -6,6 +6,8 @@ import app.dto.request.CreateMessageDTO;
 import app.dto.request.GiveUpAdminDTO;
 import app.dto.response.ChatDTO;
 import app.dto.response.ActiveMembershipDTO;
+import app.dto.response.InvitationDTO;
+import app.dto.response.UserInvitationsDTO;
 import app.dto.response.MessageDTO;
 import app.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +50,26 @@ public class ChatController {
         return ResponseEntity.ok(chatService.createChatForUser(createChatDTO, principal.getName()));
     }
 
+    @GetMapping(value = "/me/invitations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<UserInvitationsDTO>> getInvitationsForMe(Principal principal) {
+        LOGGER.info("GET /chats/me/invitations?{}", principal.getName());
+        return ResponseEntity.ok(chatService.getInvitationsForMe(principal.getName()));
+    }
+
+    @DeleteMapping(value = "/me/invitations/{invitationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> deleteInvitation(@PathVariable UUID invitationId) {
+        LOGGER.info("DELETE /chats/me/invitations/{}", invitationId);
+        chatService.deleteInvitationWithId(invitationId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/me/invitations/{invitationId}/accept")
+    public ResponseEntity<Void> acceptInvitation(@PathVariable UUID invitationId) {
+        LOGGER.info("ACCEPT /chats/me/invitations/{}", invitationId);
+        chatService.acceptInvitationWithId(invitationId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping(value="/{chatId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> getChat(@PathVariable UUID chatId) {
         LOGGER.info("GET /chats/{}", chatId);
@@ -81,6 +103,19 @@ public class ChatController {
     @PutMapping(value = "/{chatId}/memberships/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateMembershipRole(@PathVariable UUID chatId, @PathVariable String username, @RequestBody ActiveMembershipUpdateDTO activeMembershipUpdateDTO) {
         chatService.updateMembershipRole(chatId, username, activeMembershipUpdateDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value="/{chatId}/invitations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<InvitationDTO>> getInvitationsForChat(@PathVariable UUID chatId) {
+        LOGGER.info("GET /chats/invitations?{}", chatId);
+        return ResponseEntity.ok(chatService.getInvitationsForChat(chatId));
+    }
+
+    @DeleteMapping(value = "/{chatId}/invitations/{username}")
+    public ResponseEntity<Void> deleteInvitation(@PathVariable UUID chatId, @PathVariable String username) {
+        LOGGER.info("DELETE /chats/invitations/{}?{}", chatId, username);
+        chatService.deleteInvitationForChatWithUser(chatId, username);
         return ResponseEntity.ok().build();
     }
 

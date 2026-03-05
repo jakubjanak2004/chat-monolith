@@ -9,11 +9,11 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
-public class ChatDTO {
+public class UserInvitationsDTO {
     @NotNull
     private UUID id;
     @NotNull
-    private String name;
+    private String chatName;
+    @NotNull
     private List<ChatUserDTO> chatUsers;
-    private MessageDTO lastMessage;
 }

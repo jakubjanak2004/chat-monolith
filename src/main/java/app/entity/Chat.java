@@ -79,4 +79,28 @@ public class Chat {
 
         return chat;
     }
+
+    public static Chat createChatWithOwnerAndInvitees(String chatName, ChatUser owner, List<ChatUser> invitees) {
+        Chat chat = Chat.builder()
+                .name(chatName)
+                .build();
+
+        ChatMembership ownerMembership = ActiveMembership.builder()
+                .membershipType(MembershipType.ADMIN)
+                .chatUser(owner)
+                .chat(chat)
+                .build();
+
+        List<ChatMembership> invitations = invitees.stream().map(member ->
+                (ChatMembership) Invitation.builder()
+                        .chatUser(member)
+                        .chat(chat)
+                        .build()
+        ).toList();
+
+        chat.getChatMemberships().add(ownerMembership);
+        chat.getChatMemberships().addAll(invitations);
+
+        return chat;
+    }
 }

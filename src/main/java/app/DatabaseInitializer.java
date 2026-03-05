@@ -63,10 +63,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                 Chat.createChatWithOwnerAndMembers("test chat 2", adminChatUser, List.of(chatUser)),
                 Chat.createChatWithOwnerAndMembers("test chat 3", adminChatUser, List.of(chatUser)),
                 Chat.createChatWithOwnerAndMembers("test chat 4", adminChatUser, List.of(chatUser)),
-                Chat.createChatWithOwnerAndMembers("test chat 5", adminChatUser, List.of(chatUser)),
-                Chat.createChatWithOwnerAndMembers("test chat 6", adminChatUser, List.of(chatUser)),
-                Chat.createChatWithOwnerAndMembers("test chat 7", adminChatUser, List.of(chatUser)),
-                Chat.createChatWithOwnerAndMembers("test chat 8", adminChatUser, List.of(chatUser))
+                // in these chats the user will only be invited
+                Chat.createChatWithOwnerAndInvitees("test chat 5", chatUser, List.of(adminChatUser)),
+                Chat.createChatWithOwnerAndInvitees("test chat 6", chatUser, List.of(adminChatUser)),
+                Chat.createChatWithOwnerAndInvitees("test chat 7", chatUser, List.of(adminChatUser)),
+                Chat.createChatWithOwnerAndInvitees("test chat 8", chatUser, List.of(adminChatUser))
 
         );
 
