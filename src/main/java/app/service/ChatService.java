@@ -85,7 +85,8 @@ public class ChatService {
         }
 
         Message saved = messageRepository.save(message);
-        eventPublisher.publishEvent(new MessageCreatedEvent(saved.getId(), chatId));
+        MessageCreatedEvent messageCreatedEvent = messageMapper.toMessageCreatedEvent(saved);
+        eventPublisher.publishEvent(messageCreatedEvent);
 
         return messageMapper.toDTO(saved);
     }

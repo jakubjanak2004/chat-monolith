@@ -5,6 +5,7 @@ import app.dto.response.MessageDTO;
 import app.entity.Chat;
 import app.entity.ChatUser;
 import app.entity.Message;
+import app.event.MessageCreatedEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -27,4 +28,8 @@ public interface MessageMapper {
     @Mapping(target = "responseTo", ignore = true)
     @Mapping(target = "responses", ignore = true)
     Message toEntity(CreateMessageDTO createMessageDTO, Chat chat, ChatUser chatUser, Instant created);
+
+    @Mapping(source="id", target="messageId")
+    @Mapping(source = "chat.id", target="chatId")
+    MessageCreatedEvent toMessageCreatedEvent(Message saved);
 }
