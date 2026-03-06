@@ -60,13 +60,13 @@ public class ChatService {
     private final InvitationRepository invitationRepository;
     private final InvitationMapper invitationMapper;
 
-    public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
+    public Page<ChatDTO> getChatsForUsername(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
         return chatRepository.findChatsForUsername(username, queryNormalized, pageable)
                 .map(this::fromChatToDTO);
     }
 
-    public Page<MessageDTO> getMessagesForChatPageable(UUID chatId, Pageable pageable) {
+    public Page<MessageDTO> getMessagesForChat(UUID chatId, Pageable pageable) {
         Chat chat = chatRepository.findById(chatId).orElseThrow();
         return messageRepository.findAllByChat(chat, pageable)
                 .map(messageMapper::toDTO);

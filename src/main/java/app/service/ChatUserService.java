@@ -43,7 +43,7 @@ public class ChatUserService {
                 .ifPresent(chatUser -> chatUserMapper.updateFromDto(chatUserUpdateDTO, chatUser));
     }
 
-    public Page<ChatUserDTO> getUsersNotUsernamePageable(String query, String username, Pageable pageable) {
+    public Page<ChatUserDTO> getUsersNotUsername(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
         return chatUserRepository.findByNameNormNotUsername(queryNormalized, username, pageable)
                 .map(chatUserMapper::toChatUserDTO);

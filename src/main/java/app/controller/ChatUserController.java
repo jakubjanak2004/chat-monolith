@@ -42,9 +42,9 @@ public class ChatUserController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<ChatUserDTO>> getUsersNotMePageable(@RequestParam(required = false) String query, Principal principal, @ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<ChatUserDTO>> getUsersNotMe(@RequestParam(required = false) String query, Principal principal, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /users?query={}&page={}&size={}&sort={}", query, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        return ResponseEntity.ok(chatUserService.getUsersNotUsernamePageable(query, principal.getName(), pageable));
+        return ResponseEntity.ok(chatUserService.getUsersNotUsername(query, principal.getName(), pageable));
     }
 
     @PutMapping(value = "/me/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

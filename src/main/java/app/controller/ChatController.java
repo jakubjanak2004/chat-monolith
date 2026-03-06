@@ -42,7 +42,7 @@ public class ChatController {
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ChatDTO>> getChatsForMe(@RequestParam(required = false) String query, Principal principal, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /chats/me?query={}", query);
-        return ResponseEntity.ok(chatService.getChatsForUsernamePageable(query, principal.getName(), pageable));
+        return ResponseEntity.ok(chatService.getChatsForUsername(query, principal.getName(), pageable));
     }
 
     @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -123,7 +123,7 @@ public class ChatController {
     public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /chats/{}/messages?page={}&size={}&sort={}",
                 chatId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        return ResponseEntity.ok(chatService.getMessagesForChatPageable(chatId, pageable));
+        return ResponseEntity.ok(chatService.getMessagesForChat(chatId, pageable));
     }
 
     @PostMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
