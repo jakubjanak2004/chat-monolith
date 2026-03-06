@@ -16,25 +16,28 @@ public interface ChatRepository extends JpaRepository<Chat, UUID> {
                 select c
                 from Chat c
                 join c.chatMemberships cm
-                where cm.chatUser.username = :username
-                  and (:query is null or :query = '' 
-                       or c.nameNormalized like concat('%', :query, '%'))
+                where type(cm) = ActiveMembership
+                  and cm.chatUser.username = :username
+                  and (
+                        :query is null or :query = ''
+                        or c.nameNormalized like concat('%', :query, '%')
+                      )
             """)
-    Page<Chat> findByNameNormAndUsername(
-            @Param("query") String query,
+    Page<Chat> findChatsForUsername(
             @Param("username") String username,
+            @Param("query") String query,
             Pageable pageable
     );
 
     @Query("""
-        select c
-        from Chat c
-        join c.chatMemberships cmAll
-        left join c.chatMemberships cmFilter
-               on cmFilter.chatUser.username in :usernames
-        group by c
-        having count(distinct cmFilter.chatUser.username) = :#{#usernames.size()}
-           and count(distinct cmAll.chatUser.username)   = :#{#usernames.size()}
-    """)
+                select c
+                from Chat c
+                join c.chatMemberships cmAll
+                left join c.chatMemberships cmFilter
+                       on cmFilter.chatUser.username in :usernames
+                group by c
+                having count(distinct cmFilter.chatUser.username) = :#{#usernames.size()}
+                   and count(distinct cmAll.chatUser.username)   = :#{#usernames.size()}
+            """)
     List<Chat> findChatsWithExactlyParticipants(@Param("usernames") Collection<String> usernames);
 }

@@ -62,8 +62,7 @@ public class ChatService {
 
     public Page<ChatDTO> getChatsForUsernamePageable(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
-        // todo find chats by ActiveMemberships so that no invitations are loaded
-        return chatRepository.findByNameNormAndUsername(queryNormalized, username, pageable)
+        return chatRepository.findChatsForUsername(username, queryNormalized, pageable)
                 .map(this::fromChatToDTO);
     }
 
@@ -149,7 +148,7 @@ public class ChatService {
     }
 
     public List<ActiveMembershipDTO> getActiveMembershipsForChat(UUID chatId) {
-        return activeMembershipRepository.findByChat_Id(chatId)
+        return activeMembershipRepository.findAllByChat_Id(chatId)
                 .stream()
                 .map(activeMembershipMapper::toDTO)
                 .toList();
