@@ -6,6 +6,7 @@ import app.dto.response.AuthResponseDTO;
 import app.dto.response.ChatUserDTO;
 import app.entity.ChatMembership;
 import app.entity.ChatUser;
+import app.event.UserCreatedEvent;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -44,4 +45,6 @@ public interface ChatUserMapper {
 
     @Mapping(source = "chatUser", target = ".")
     ChatUserDTO fromMembership(ChatMembership membership);
+
+    UserCreatedEvent toUserCreatedEvent(ChatUser chatUser);
 }

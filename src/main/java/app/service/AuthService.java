@@ -6,6 +6,7 @@ import app.dto.request.SignUpDTO;
 import app.entity.ChatUser;
 import app.event.UserCreatedEvent;
 import app.exception.UsernameAlreadyExistsException;
+import app.mapper.AuthMapper;
 import app.mapper.ChatUserMapper;
 import app.repository.ChatUserRepository;
 import jakarta.validation.Valid;
@@ -42,6 +43,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final ChatUserMapper chatUserMapper;
+    private final AuthMapper authMapper;
+    private final MacAlgorithm macAlgorithm;
 
     @Value("${app.jwt.issuer}")
     private String jwtIssuer;
@@ -49,7 +52,8 @@ public class AuthService {
     private Duration jwtAccessTTL;
 
     public AuthResponseDTO login(@Valid LoginDTO loginDTO) {
-        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.username(), loginDTO.password()));
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = authMapper.toUsernamePasswordAuthenticationToken(loginDTO);
+        Authentication auth = authManager.authenticate(usernamePasswordAuthenticationToken);
 
         return Optional.ofNullable(auth.getPrincipal())
                 .map(obj -> (ChatUser) obj)
@@ -67,7 +71,8 @@ public class AuthService {
 
         ChatUser saved = chatUserRepository.save(user);
 
-        eventPublisher.publishEvent(new UserCreatedEvent(saved.getEmail(), saved.getUsername()));
+        UserCreatedEvent userCreatedEvent = chatUserMapper.toUserCreatedEvent(saved);
+        eventPublisher.publishEvent(userCreatedEvent);
 
         String token = generateToken(saved);
         return chatUserMapper.toAuthResponseDTO(saved, token);
@@ -79,11 +84,18 @@ public class AuthService {
         }
     }
 
-
     private String generateToken(UserDetails userDetails) {
         Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder().issuer(jwtIssuer).issuedAt(now).expiresAt(now.plus(jwtAccessTTL)).subject(userDetails.getUsername()).build();
-        JwsHeader headers = JwsHeader.with(MacAlgorithm.HS256).build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(jwtIssuer)
+                .issuedAt(now)
+                .expiresAt(now.plus(jwtAccessTTL))
+                .subject(userDetails.getUsername())
+                .build();
+
+        JwsHeader headers = JwsHeader.with(macAlgorithm).build();
+        return jwtEncoder
+                .encode(JwtEncoderParameters.from(headers, claims))
+                .getTokenValue();
     }
 }
