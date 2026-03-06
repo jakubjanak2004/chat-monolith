@@ -1,8 +1,9 @@
 package app.service;
 
-import app.dto.response.AuthResponseDTO;
+import app.config.props.JwtProperties;
 import app.dto.request.LoginDTO;
 import app.dto.request.SignUpDTO;
+import app.dto.response.AuthResponseDTO;
 import app.entity.ChatUser;
 import app.event.UserCreatedEvent;
 import app.exception.UsernameAlreadyExistsException;
@@ -11,7 +12,6 @@ import app.mapper.ChatUserMapper;
 import app.repository.ChatUserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,10 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +43,7 @@ public class AuthService {
     private final ChatUserMapper chatUserMapper;
     private final AuthMapper authMapper;
     private final MacAlgorithm macAlgorithm;
-
-    @Value("${app.jwt.issuer}")
-    private String jwtIssuer;
-    @Value("${app.jwt.access-ttl}")
-    private Duration jwtAccessTTL;
+    private final JwtProperties jwtProperties;
 
     public AuthResponseDTO login(@Valid LoginDTO loginDTO) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = authMapper.toUsernamePasswordAuthenticationToken(loginDTO);
@@ -87,9 +81,9 @@ public class AuthService {
     private String generateToken(UserDetails userDetails) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(jwtIssuer)
+                .issuer(jwtProperties.issuer())
                 .issuedAt(now)
-                .expiresAt(now.plus(jwtAccessTTL))
+                .expiresAt(now.plus(jwtProperties.accessTTL()))
                 .subject(userDetails.getUsername())
                 .build();
 

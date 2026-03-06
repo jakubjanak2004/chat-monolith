@@ -1,5 +1,6 @@
 package app.config.ws;
 
+import app.config.props.WebSocketProperties;
 import app.service.ws.UserSessionRegistry;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtDecoder jwtDecoder;
     private final UserSessionRegistry userSessionRegistry;
+    private final WebSocketProperties webSocketProperties;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -47,8 +49,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                // todo tighten in production
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns(webSocketProperties.allowedOrigins().toArray(String[]::new))
                 .withSockJS();
     }
 }

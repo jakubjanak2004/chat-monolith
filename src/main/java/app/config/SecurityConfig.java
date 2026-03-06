@@ -1,5 +1,6 @@
 package app.config;
 
+import app.config.props.JwtProperties;
 import app.config.props.SecurityProperties;
 import app.exception.UsernameNotFoundException;
 import app.repository.ChatUserRepository;
@@ -39,12 +40,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final SecurityProperties securityProperties;
-    // todo think about moving these into security properties
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${app.jwt.algo}")
-    private String jwtAlgo;
+    private final JwtProperties jwtProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -53,7 +49,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // todo authenticate websockets using interceptor
                         // no authentication for websocket endpoint
                         .requestMatchers("/ws/**").permitAll()
                         // no authentication required for auth endpoint
@@ -88,8 +83,8 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey jwtSecret() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
-        return new SecretKeySpec(keyBytes, jwtAlgo);
+        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.secret());
+        return new SecretKeySpec(keyBytes, jwtProperties.algo());
     }
 
     @Bean
@@ -126,6 +121,6 @@ public class SecurityConfig {
 
     @Bean
     public MacAlgorithm jwtMacAlgorithm() {
-        return MacAlgorithm.from(jwtAlgo);
+        return MacAlgorithm.from(jwtProperties.algo());
     }
 }
