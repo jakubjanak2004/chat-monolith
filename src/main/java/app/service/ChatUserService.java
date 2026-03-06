@@ -37,7 +37,6 @@ public class ChatUserService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
-    // todo add preauthorize
     public void updateUserWithUsername(@Valid ChatUserUpdateDTO chatUserUpdateDTO, String username) {
         chatUserRepository.findByUsername(username)
                 .ifPresent(chatUser -> chatUserMapper.updateFromDto(chatUserUpdateDTO, chatUser));
