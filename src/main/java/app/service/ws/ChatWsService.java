@@ -11,20 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-public class ChatWSPublisher {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatWSPublisher.class);
+public class ChatWsService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatWsService.class);
     private final SimpMessagingTemplate template;
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
     private final UserSessionRegistry userSessionRegistry;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void on(MessageCreatedEvent e) {
+    public void messageCreated(MessageCreatedEvent e) {
         Message message = messageRepository.findById(e.messageId()).orElseThrow();
         MessageDTO messageDTO = messageMapper.toDTO(message);
 
