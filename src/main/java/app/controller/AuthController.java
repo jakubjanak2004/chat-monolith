@@ -23,6 +23,7 @@ public class AuthController {
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AuthResponseDTO> logIn(@RequestBody LoginDTO loginDTO) {
+        LOGGER.info("POST /auth/login");
         AuthResponseDTO authResponseDTO = authService.login(loginDTO);
         LOGGER.info("User {} logged in.", loginDTO.username());
         return ResponseEntity.ok(authResponseDTO);
@@ -30,6 +31,7 @@ public class AuthController {
 
     @PostMapping(value = "signup", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AuthResponseDTO> signUp(@RequestBody SignUpDTO signUpDTO) {
+        LOGGER.info("POST /auth/signup");
         AuthResponseDTO authResponseDTO = authService.signUp(signUpDTO);
         LOGGER.info("User {} signed up.", signUpDTO.username());
         return ResponseEntity.ok(authResponseDTO);
