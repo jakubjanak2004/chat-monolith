@@ -1,19 +1,16 @@
 package app.dto.response;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@AllArgsConstructor
-public class ChatDTO {
-    @NotNull
-    private UUID id;
-    @NotNull
-    private String name;
-    private List<ChatUserDTO> chatUsers;
-    private MessageDTO lastMessage;
+public record ChatDTO(
+        @NotNull
+        UUID id,
+        @NotNull
+        String name,
+        List<ChatUserDTO> chatUsers,
+        MessageDTO lastMessage
+) {
 }

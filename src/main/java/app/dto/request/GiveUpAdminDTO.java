@@ -1,10 +1,9 @@
 package app.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import jakarta.validation.constraints.NotBlank;
 
-@Getter
-@AllArgsConstructor
-public class GiveUpAdminDTO {
-    private String successorUsername;
+public record GiveUpAdminDTO(
+        @NotBlank
+        String successorUsername
+) {
 }

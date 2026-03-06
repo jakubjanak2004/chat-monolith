@@ -80,8 +80,8 @@ public class ChatService {
 
         Message message = messageMapper.toEntity(messageDTO, chat, chatUser, Instant.now());
 
-        if (messageDTO.getReplyToId() != null) {
-            Message replyTo = messageRepository.findById(messageDTO.getReplyToId()).orElseThrow();
+        if (messageDTO.replyToId() != null) {
+            Message replyTo = messageRepository.findById(messageDTO.replyToId()).orElseThrow();
             message.setResponseTo(replyTo);
         }
 
@@ -105,7 +105,7 @@ public class ChatService {
                 .orElseThrow();
 
         // normalize list: trim, remove blanks, distinct, and don't include owner
-        List<String> usernames = dto.getMembersList().stream()
+        List<String> usernames = dto.membersList().stream()
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
                 .distinct()
@@ -120,7 +120,7 @@ public class ChatService {
             throw new IllegalArgumentException("Some usernames do not exist.");
         }
 
-        Chat chat = Chat.createChatWithOwnerAndMembers(dto.getName(), owner, members);
+        Chat chat = Chat.createChatWithOwnerAndMembers(dto.name(), owner, members);
 
         Chat saved = chatRepository.save(chat);
         return chatMapper.toDTO(saved, null);
@@ -177,7 +177,7 @@ public class ChatService {
             return;
         }
 
-        String successorUsername = Optional.ofNullable(giveUpAdminDTO.getSuccessorUsername())
+        String successorUsername = Optional.ofNullable(giveUpAdminDTO.successorUsername())
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new IllegalArgumentException(

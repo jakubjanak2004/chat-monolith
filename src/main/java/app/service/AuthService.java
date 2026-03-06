@@ -49,7 +49,7 @@ public class AuthService {
     private Duration jwtAccessTTL;
 
     public AuthResponseDTO login(@Valid LoginDTO loginDTO) {
-        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
+        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.username(), loginDTO.password()));
 
         return Optional.ofNullable(auth.getPrincipal())
                 .map(obj -> (ChatUser) obj)
@@ -60,10 +60,10 @@ public class AuthService {
     }
 
     public AuthResponseDTO signUp(@Valid SignUpDTO dto) {
-        ensureUsernameAvailable(dto.getUsername());
+        ensureUsernameAvailable(dto.username());
 
         ChatUser user = chatUserMapper.toEntity(dto);
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setPassword(passwordEncoder.encode(dto.password()));
 
         ChatUser saved = chatUserRepository.save(user);
 

@@ -1,13 +1,7 @@
 package app.dto.request;
 
 import app.enumeration.MembershipType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
+import jakarta.validation.constraints.NotNull;
 
-@Getter
-@AllArgsConstructor
-public class ActiveMembershipUpdateDTO {
-    @NonNull
-    private MembershipType membershipType;
+public record ActiveMembershipUpdateDTO(@NotNull MembershipType membershipType) {
 }
