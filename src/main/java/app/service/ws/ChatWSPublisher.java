@@ -1,6 +1,5 @@
 package app.service.ws;
 
-import app.config.ws.WebSocketConfig;
 import app.dto.response.MessageDTO;
 import app.entity.ChatMembership;
 import app.entity.Message;
@@ -14,8 +13,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-
-import java.util.HashSet;
 
 @Component
 @RequiredArgsConstructor
