@@ -19,10 +19,6 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.ERROR
 )
 public interface ChatUserMapper {
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "token", target = "token")
-    AuthResponseDTO toAuthResponseDTO(ChatUser user, String token);
-
     ChatUserDTO toChatUserDTO(ChatUser user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

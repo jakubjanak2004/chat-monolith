@@ -50,7 +50,7 @@ public class WSChannelInterceptor implements ChannelInterceptor {
         String token = Optional.of(auth)
                 .filter(h -> h.startsWith("Bearer "))
                 .map(h -> h.substring("Bearer ".length()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Authorization header (expected: Bearer <token>)"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Authorization header (expected: Bearer <accessToken>)"));
 
         Jwt jwt = jwtDecoder.decode(token);
         String username = jwt.getSubject();

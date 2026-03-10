@@ -13,6 +13,7 @@ public record JwtProperties(
         @NotBlank String secret,
         @NotBlank String algo,
         @NotBlank String issuer,
-        @NotNull Duration accessTTL
+        @NotNull Duration accessTTL,
+        @NotNull Duration refreshTTL
 ) {
 }

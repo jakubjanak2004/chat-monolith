@@ -1,6 +1,7 @@
 package app.controller;
 
 import app.dto.request.LoginDTO;
+import app.dto.request.RefreshRequestDTO;
 import app.dto.request.SignUpDTO;
 import app.dto.response.AuthResponseDTO;
 import app.service.AuthService;
@@ -35,5 +36,11 @@ public class AuthController {
         AuthResponseDTO authResponseDTO = authService.signUp(signUpDTO);
         LOGGER.info("User {} signed up.", signUpDTO.username());
         return ResponseEntity.ok(authResponseDTO);
+    }
+
+    @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AuthResponseDTO> refresh(@RequestBody RefreshRequestDTO request) {
+        LOGGER.info("POST /auth/refresh");
+        return ResponseEntity.ok(authService.refresh(request));
     }
 }
