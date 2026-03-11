@@ -10,6 +10,7 @@ public record ChatDTO(
         UUID id,
         @NotNull
         String name,
+        @NotNull
         List<ChatUserDTO> chatUsers,
         MessageDTO lastMessage
 ) {
