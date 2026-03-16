@@ -1,0 +1,12 @@
+#
+# Local development overrides.
+#
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_APPLICATION_JSON: >
+        {"app":{"websocket":{"allowedOrigins":["http://localhost:8081","http://127.0.0.1:8081"]}}}

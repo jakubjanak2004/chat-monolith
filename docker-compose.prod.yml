@@ -1,0 +1,24 @@
+#
+# Production / Hetzner overrides.
+#
+
+services:
+  app:
+    image: jakubkojanak/chat-monolith:latest
+    build: null
+    restart: unless-stopped
+    environment:
+      SPRING_APPLICATION_JSON: >
+        {"app":{"websocket":{"allowedOrigins":["http://178.104.73.186:8081","http://178.104.73.186","https://178.104.73.186"]}}}
+
+  minio:
+    restart: unless-stopped
+
+  mailpit:
+    restart: unless-stopped
+
+  prometheus:
+    restart: unless-stopped
+
+  grafana:
+    restart: unless-stopped
