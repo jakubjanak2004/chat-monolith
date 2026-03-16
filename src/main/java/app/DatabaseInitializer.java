@@ -37,6 +37,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         ChatUser firstChatUser = chatUsers.getFirst();
         LOGGER.info("firstChatUser: {}", firstChatUser);
         createAdmin(firstChatUser);
+        LOGGER.info("creating testing users");
+        createChatUsers(2);
         LOGGER.info("Seeding finished");
     }
 
@@ -86,5 +88,13 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         // todo add profile pic to users
         return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), usersSeedProperties.password());
+    }
+
+    private void createChatUsers(int count) {
+        if (!usersSeedProperties.enabled()) return;
+
+        IntStream.rangeClosed(1, count).forEach(i -> {
+            chatUserGenerator.generateChatUser(String.format("test%d", i), "test");
+        });
     }
 }

@@ -31,10 +31,30 @@ public class Generator {
         return chatUserRepository.save(chatUser);
     }
 
+    public ChatUser generateChatUser(String username, String password) {
+        ChatUser chatUser = constructNewUser(username, password);
+        return chatUserRepository.save(chatUser);
+    }
+
     private ChatUser constructNewUser(String password) {
         String firstName = faker.name().firstName();
         String lastName = faker.name().lastName();
         String username = String.format("%s %s", firstName, lastName);
+        String email = faker.internet().emailAddress();
+        String encodedPassword = passwordEncoder.encode(password);
+
+        return ChatUser.builder()
+                .username(username)
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .password(encodedPassword)
+                .build();
+    }
+
+    private ChatUser constructNewUser(String username, String password) {
+        String firstName = faker.name().firstName();
+        String lastName = faker.name().lastName();
         String email = faker.internet().emailAddress();
         String encodedPassword = passwordEncoder.encode(password);
 
