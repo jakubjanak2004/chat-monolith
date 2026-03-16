@@ -4,7 +4,9 @@
 
 services:
   app:
-    image: jakubkojanak/chat-monolith:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       SPRING_APPLICATION_JSON: >
