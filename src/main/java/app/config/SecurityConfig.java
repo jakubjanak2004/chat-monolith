@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         // no authentication required for auth endpoint
                         .requestMatchers("/auth/**").permitAll()
+                        // allow Prometheus scrape and basic health without auth
+                        .requestMatchers("/actuator/prometheus", "/actuator/health", "/actuator/health/**").permitAll()
                         // get for user profile picture, no authentication required
                         .requestMatchers(HttpMethod.GET, "/users/{username}/profile-picture").permitAll()
                         // allow all for openAPI endpoints

@@ -1,0 +1,21 @@
+# Keep the build context small and cache-friendly.
+.git
+.gitignore
+.idea
+.DS_Store
+
+# Maven/Java build outputs
+target
+**/target
+
+# Logs
+*.log
+
+# Local-only config (typically contains secrets)
+src/main/resources/local.properties
+
+# Node / misc (in case added later)
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log

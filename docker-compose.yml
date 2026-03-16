@@ -1,0 +1,140 @@
+#
+# Local development compose.
+# One command brings up:
+# - the backend (built from ./Dockerfile)
+# - MinIO (required by the app for profile pictures)
+#
+# Notes:
+# - Secrets/config are provided via environment variables (see .env.example).
+# - The app defaults to H2 in-memory DB; in containers that means "data disappears on restart".
+#   If you want persistence locally, switch SPRING_DATASOURCE_URL to a file-based H2 URL.
+#
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chat-monolith-app
+    ports:
+      # application.properties sets server.port=8090
+      - "8090:8090"
+    env_file:
+      # Create a local .env from .env.example (do not commit secrets)
+      - .env
+    environment:
+      # Ensure the app binds to the container interface.
+      # (Spring Boot typically does by default, but this avoids surprises.)
+      SERVER_ADDRESS: "0.0.0.0"
+
+      # Your `WebSocketProperties.allowedOrigins` is validated as @NotEmpty.
+      # Spring's env-var-to-camelCase-list binding can be finicky, so we provide it
+      # via SPRING_APPLICATION_JSON (reliably supports arrays).
+      #
+      # Adjust allowed origins for your frontend as needed.
+      SPRING_APPLICATION_JSON: >
+        {"app":{"websocket":{"allowedOrigins":["http://localhost:8081","http://127.0.0.1:8081"]}}}
+
+      # Mailpit (local SMTP sink). Overrides application.properties defaults.
+      SPRING_MAIL_HOST: "mailpit"
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+
+      # If you want local persistence, uncomment and adjust:
+      # SPRING_DATASOURCE_URL: "jdbc:h2:file:/data/testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+    depends_on:
+      # Ensure the bucket exists before the app boots.
+      minio-init:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+      prometheus:
+        condition: service_started
+    volumes:
+      # Optional: enable if you use a file-based H2 URL above
+      # - app_data:/data
+      - app_tmp:/tmp
+
+  minio:
+    image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+    container_name: chat-monolith-minio
+    command: server /data --console-address ":9001"
+    healthcheck:
+      # Used by minio-init; allows "depends_on: condition: service_healthy".
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # MinIO console
+    environment:
+      # These defaults match the values in your existing local.properties.
+      MINIO_ROOT_USER: "${MINIO_ACCESS_KEY:-minio}"
+      MINIO_ROOT_PASSWORD: "${MINIO_SECRET_KEY:-minio12345}"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    # Creates the bucket on first run so the app can upload immediately.
+    image: minio/mc:RELEASE.2025-01-17T23-25-50Z
+    container_name: chat-monolith-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_URL: "${MINIO_URL:-http://minio:9000}"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minio}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minio12345}"
+      MINIO_BUCKET: "${MINIO_BUCKET:-pictures}"
+    entrypoint:
+      - /bin/sh
+      - -lc
+      - |
+        mc alias set local "$${MINIO_URL}" "$${MINIO_ACCESS_KEY}" "$${MINIO_SECRET_KEY}"
+        mc mb -p "local/$${MINIO_BUCKET}" || true
+        mc anonymous set download "local/$${MINIO_BUCKET}" || true
+
+  mailpit:
+    # Local SMTP sink + web UI. This satisfies Spring's JavaMailSender bean
+    # without needing real SMTP credentials.
+    image: axllent/mailpit:v1.24
+    container_name: chat-monolith-mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: chat-monolith-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: chat-monolith-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Default local-only credentials. Change for anything beyond localhost.
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+    depends_on:
+      prometheus:
+        condition: service_started
+    volumes:
+      # Auto-provision Prometheus datasource.
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      # Auto-provision dashboards.
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  minio_data:
+  app_tmp:
+  # app_data:

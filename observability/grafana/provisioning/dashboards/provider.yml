@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: "Spring Boot (provisioned)"
+    orgId: 1
+    folder: "Spring Boot"
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      # Path inside the Grafana container (see docker-compose volume mount)
+      path: /var/lib/grafana/dashboards
