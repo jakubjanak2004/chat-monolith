@@ -19,6 +19,12 @@ services:
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
 
+      # PostgreSQL (overrides application.properties defaults inside containers)
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/chat_monolith"
+      SPRING_DATASOURCE_USERNAME: "chat"
+      SPRING_DATASOURCE_PASSWORD: "chat"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+
       # If you want persistence later, uncomment and adjust:
       # SPRING_DATASOURCE_URL: "jdbc:h2:file:/data/testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
       # SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
@@ -29,6 +35,8 @@ services:
         condition: service_started
       prometheus:
         condition: service_started
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/actuator/health"]
       interval: 10s
@@ -37,6 +45,23 @@ services:
       start_period: 30s
     volumes:
       - app_tmp:/tmp
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: chat-monolith-postgres
+    environment:
+      POSTGRES_DB: chat_monolith
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chat
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   minio:
     image: minio/minio:RELEASE.2025-01-20T14-49-07Z
@@ -109,5 +134,6 @@ services:
 
 volumes:
   minio_data:
+  postgres_data:
   app_tmp:
   # app_data:
