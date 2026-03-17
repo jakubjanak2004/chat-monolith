@@ -350,6 +350,66 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "description": "How many GC events occurred (count over the last 5 minutes).",
+      "fieldConfig": {
+        "defaults": { "unit": "none", "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 200 }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 54 },
+      "id": 17,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "expr": "sum(increase(jvm_gc_pause_seconds_count{job=\"chat-monolith\"}[5m]))",
+          "legendFormat": "events (5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "GC events (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "description": "Total time spent in GC pauses over the last 5 minutes.",
+      "fieldConfig": {
+        "defaults": { "unit": "s", "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 54 },
+      "id": 18,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "expr": "sum(increase(jvm_gc_pause_seconds_sum{job=\"chat-monolith\"}[5m]))",
+          "legendFormat": "seconds (5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "GC time spent (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "description": "Average GC pause duration over the last 5 minutes (sum/count).",
+      "fieldConfig": {
+        "defaults": { "unit": "s", "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.05 }, { "color": "red", "value": 0.2 }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 54 },
+      "id": 19,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "expr": "sum(increase(jvm_gc_pause_seconds_sum{job=\"chat-monolith\"}[5m])) / sum(increase(jvm_gc_pause_seconds_count{job=\"chat-monolith\"}[5m]))",
+          "legendFormat": "avg pause (5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "GC avg pause (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
       "description": "How many times the process start time changed (proxy for restarts).",
       "fieldConfig": {
         "defaults": { "unit": "none", "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 3 }] } },
@@ -421,7 +481,7 @@
   "timezone": "browser",
   "title": "Spring Boot - Basic",
   "uid": "spring-boot-basic",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
 
