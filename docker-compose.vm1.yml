@@ -10,7 +10,7 @@
 services:
   prometheus:
     image: prom/prometheus:v3.5.0
-    container_name: chat-monolith-prometheus
+    # Do not set container_name: allows multiple stacks (local test, prod) to coexist.
     restart: unless-stopped
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -22,7 +22,7 @@ services:
 
   grafana:
     image: grafana/grafana:11.6.0
-    container_name: chat-monolith-grafana
+    # Do not set container_name: allows multiple stacks to coexist.
     restart: unless-stopped
     ports:
       - "3000:3000"

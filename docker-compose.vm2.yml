@@ -17,32 +17,34 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chat-monolith-app
     restart: unless-stopped
     ports:
       - "8090:8090"
       - "9091:9091"
+    # Load required configuration from a .env file on VM2.
+    # (Do not commit your real .env with secrets.)
+    env_file:
+      - .env
     environment:
       SERVER_ADDRESS: "0.0.0.0"
 
       # PostgreSQL
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/chat_monolith"
-      SPRING_DATASOURCE_USERNAME: "chat"
-      SPRING_DATASOURCE_PASSWORD: "chat"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/chat_monolith}"
+      SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME:-chat}"
+      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD:-chat}"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}"
 
       # Mail:
       # The app currently requires JavaMailSender to exist at startup.
       # If you have real SMTP, set SPRING_MAIL_* and remove the mailpit service.
-      SPRING_MAIL_HOST: "mailpit"
-      SPRING_MAIL_PORT: "1025"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      SPRING_MAIL_HOST: "${SPRING_MAIL_HOST:-mailpit}"
+      SPRING_MAIL_PORT: "${SPRING_MAIL_PORT:-1025}"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:-false}"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-false}"
 
       # WebSocket allowed origins:
       # Override these to your VM1/frontend URLs.
-      SPRING_APPLICATION_JSON: >
-        {"app":{"websocket":{"allowedOrigins":["http://YOUR_VM1_IP:8081","http://YOUR_VM1_IP","https://YOUR_VM1_IP"]}}}
+      SPRING_APPLICATION_JSON: "${SPRING_APPLICATION_JSON:-{\"app\":{\"websocket\":{\"allowedOrigins\":[\"http://localhost:8081\",\"http://127.0.0.1:8081\"]}}}}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,12 +61,11 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: chat-monolith-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: chat_monolith
-      POSTGRES_USER: chat
-      POSTGRES_PASSWORD: chat
+      POSTGRES_DB: "${POSTGRES_DB:-chat_monolith}"
+      POSTGRES_USER: "${POSTGRES_USER:-chat}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-chat}"
     # Typically you do NOT need to expose Postgres publicly.
     # Uncomment only if you need to connect from outside VM2.
     # ports:
@@ -79,7 +80,6 @@ services:
 
   minio:
     image: minio/minio:RELEASE.2025-01-20T14-49-07Z
-    container_name: chat-monolith-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     healthcheck:
@@ -99,12 +99,11 @@ services:
 
   minio-init:
     image: minio/mc:RELEASE.2025-01-17T23-25-50Z
-    container_name: chat-monolith-minio-init
     depends_on:
       minio:
         condition: service_healthy
     environment:
-      MINIO_URL: "http://minio:9000"
+      MINIO_URL: "${MINIO_URL:-http://minio:9000}"
       MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minio}"
       MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minio12345}"
       MINIO_BUCKET: "${MINIO_BUCKET:-pictures}"
@@ -118,7 +117,6 @@ services:
 
   mailpit:
     image: axllent/mailpit:v1.24
-    container_name: chat-monolith-mailpit
     restart: unless-stopped
     # Optional: expose UI for debugging.
     # ports:
