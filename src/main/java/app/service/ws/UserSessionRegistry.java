@@ -22,4 +22,12 @@ public class UserSessionRegistry {
     public void addSessionForUser(String sessionId, String username) {
         getSessionSet(username).add(sessionId);
     }
+
+    public int getActiveSessionCount() {
+        return usernameToSessionSet.values().stream().mapToInt(Set::size).sum();
+    }
+
+    public int getActiveUserCount() {
+        return (int) usernameToSessionSet.values().stream().filter(s -> !s.isEmpty()).count();
+    }
 }

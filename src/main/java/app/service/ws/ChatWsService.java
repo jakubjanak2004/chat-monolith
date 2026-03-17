@@ -5,23 +5,31 @@ import app.entity.ChatMembership;
 import app.entity.Message;
 import app.event.MessageCreatedEvent;
 import app.mapper.MessageMapper;
+import app.observability.WebSocketMetrics;
 import app.repository.MessageRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
+@Validated
 public class ChatWsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatWsService.class);
     private final SimpMessagingTemplate template;
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
     private final UserSessionRegistry userSessionRegistry;
+    private final WebSocketMetrics webSocketMetrics;
 
-    public void messageCreated(MessageCreatedEvent e) {
+    public void messageCreated(@Valid MessageCreatedEvent e) {
         Message message = messageRepository.findById(e.messageId()).orElseThrow();
         MessageDTO messageDTO = messageMapper.toDTO(message);
 
@@ -33,5 +41,12 @@ public class ChatWsService {
                 .peek(chatUser -> LOGGER.info("WS sendToUser username={}", chatUser.getUsername()))
                 .flatMap(chatUser -> userSessionRegistry.getSessionSet(chatUser.getUsername()).stream())
                 .forEach(sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO));
+
+        // record message creation time
+        Instant created = message.getCreated();
+        long ms = Duration.between(created, Instant.now()).toMillis();
+        if (ms >= 0) {
+            webSocketMetrics.messageDeliveryLag().record(Duration.ofMillis(ms));
+        }
     }
 }

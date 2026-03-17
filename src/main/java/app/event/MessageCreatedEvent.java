@@ -1,6 +1,10 @@
 package app.event;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.UUID;
 
-public record MessageCreatedEvent(UUID messageId, UUID chatId) {
+public record MessageCreatedEvent(
+        @NotNull UUID messageId,
+        @NotNull UUID chatId) {
 }
