@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class Generator {
     private ChatUser constructNewUser(String password) {
         String firstName = faker.name().firstName();
         String lastName = faker.name().lastName();
-        String username = String.format("%s %s", firstName, lastName);
+        String username = ensureUniqueUsername(String.format("%s %s", firstName, lastName));
         String email = faker.internet().emailAddress();
         String encodedPassword = passwordEncoder.encode(password);
 
@@ -57,9 +58,10 @@ public class Generator {
         String lastName = faker.name().lastName();
         String email = faker.internet().emailAddress();
         String encodedPassword = passwordEncoder.encode(password);
+        String uniqueUsername = ensureUniqueUsername(username);
 
         return ChatUser.builder()
-                .username(username)
+                .username(uniqueUsername)
                 .email(email)
                 .firstName(firstName)
                 .lastName(lastName)
@@ -68,11 +70,22 @@ public class Generator {
     }
 
     public List<ChatUser> generateChatUsers(int count, String password) {
+        // IMPORTANT:
+        // - Do not save twice (generateChatUser() already saves).
+        // - Avoid parallel generation to reduce collisions and DB contention.
         List<ChatUser> chatUserList = IntStream.rangeClosed(1, count)
-                .parallel()
-                .mapToObj(i -> generateChatUser(password))
+                .mapToObj(i -> constructNewUser(password))
                 .toList();
         return chatUserRepository.saveAll(chatUserList);
+    }
+
+    private String ensureUniqueUsername(String base) {
+        String candidate = base;
+        AtomicInteger suffix = new AtomicInteger(2);
+        while (chatUserRepository.existsByUsername(candidate)) {
+            candidate = base + " " + suffix.getAndIncrement();
+        }
+        return candidate;
     }
 
     public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
