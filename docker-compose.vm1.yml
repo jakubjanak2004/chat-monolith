@@ -1,0 +1,38 @@
+#
+# VM1 (Frontend + Monitoring): Prometheus + Grafana.
+#
+# This repo does not contain your frontend image, so only monitoring is defined here.
+#
+# Run on VM1:
+#   docker compose -f docker-compose.vm1.yml up -d
+#
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: chat-monolith-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      # Scrape VM2 instead of local containers.
+      - ./observability/prometheus.vm1.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: chat-monolith-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+    depends_on:
+      prometheus:
+        condition: service_started
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+

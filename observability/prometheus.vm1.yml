@@ -1,0 +1,17 @@
+#
+# VM1 Prometheus config: scrapes Spring Boot metrics from VM2.
+#
+# IMPORTANT:
+# - Replace YOUR_VM2_IP below with VM2's reachable IP or DNS name.
+# - Ensure VM2 firewall allows VM1 -> VM2:9091.
+#
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: chat-monolith
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["YOUR_VM2_IP:9091"]
+
