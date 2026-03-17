@@ -1,4 +1,10 @@
 package app.event;
 
-public record UserCreatedEvent(String email, String username) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record UserCreatedEvent(
+        @NotNull @Email String email,
+        @NotBlank String username) {
 }

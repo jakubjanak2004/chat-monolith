@@ -16,6 +16,6 @@ public class ChatUserEmailListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(UserCreatedEvent event) {
-        chatUserMailService.sendWelcomeEmail(event.email(), event.username());
+        chatUserMailService.sendWelcomeEmail(event);
     }
 }
