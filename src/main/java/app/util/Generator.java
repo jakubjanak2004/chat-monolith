@@ -27,14 +27,9 @@ public class Generator {
     private final PasswordEncoder passwordEncoder;
     private final MessageRepository messageRepository;
 
-    public ChatUser generateChatUser(String password) {
-        ChatUser chatUser = constructNewUser(password);
-        return chatUserRepository.save(chatUser);
-    }
-
-    public ChatUser generateChatUser(String username, String password) {
+    public void generateChatUser(String username, String password) {
         ChatUser chatUser = constructNewUser(username, password);
-        return chatUserRepository.save(chatUser);
+        chatUserRepository.save(chatUser);
     }
 
     private ChatUser constructNewUser(String password) {
@@ -70,9 +65,6 @@ public class Generator {
     }
 
     public List<ChatUser> generateChatUsers(int count, String password) {
-        // IMPORTANT:
-        // - Do not save twice (generateChatUser() already saves).
-        // - Avoid parallel generation to reduce collisions and DB contention.
         List<ChatUser> chatUserList = IntStream.rangeClosed(1, count)
                 .mapToObj(i -> constructNewUser(password))
                 .toList();
@@ -88,7 +80,7 @@ public class Generator {
         return candidate;
     }
 
-    public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
+    public void generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
         int wordCount = ThreadLocalRandom.current().nextInt(wordCountFrom, wordCountTo + 1);
         List<ChatUser> chatUsers = chat.getChatMemberships().stream()
                 .map(ChatMembership::getChatUser)
@@ -105,7 +97,7 @@ public class Generator {
                 responseTo = content.get(idx);
             }
         }
-        return messageRepository.save(
+        messageRepository.save(
                 Message.builder()
                         .content(faker.lorem().sentence(wordCount))
                         .responseTo(responseTo)
