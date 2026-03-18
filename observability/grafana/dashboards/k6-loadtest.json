@@ -35,7 +35,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
       "targets": [
         {
-          "expr": "sum(k6_vus{job=\"k6\"})",
+          "expr": "sum(k6_vus)",
           "legendFormat": "vus",
           "refId": "A"
         }
@@ -59,7 +59,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
       "targets": [
         {
-          "expr": "sum(rate(k6_http_reqs{job=\"k6\"}[1m]))",
+          "expr": "sum(rate({__name__=~\"k6_http_reqs(_total)?\"}[1m]))",
           "legendFormat": "rps",
           "refId": "A"
         }
@@ -83,7 +83,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single" } },
       "targets": [
         {
-          "expr": "100 * (sum(rate(k6_http_req_failed{job=\"k6\"}[1m])) / sum(rate(k6_http_reqs{job=\"k6\"}[1m])))",
+          "expr": "100 * (sum(rate({__name__=~\"k6_http_req_failed(_total)?\"}[1m])) / sum(rate({__name__=~\"k6_http_reqs(_total)?\"}[1m])))",
           "legendFormat": "failed %",
           "refId": "A"
         }
@@ -107,17 +107,17 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(k6_http_req_duration_seconds_bucket{job=\"k6\"}[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(k6_http_req_duration_seconds_bucket[5m])))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(k6_http_req_duration_seconds_bucket{job=\"k6\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(k6_http_req_duration_seconds_bucket[5m])))",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(k6_http_req_duration_seconds_bucket{job=\"k6\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(k6_http_req_duration_seconds_bucket[5m])))",
           "legendFormat": "p99",
           "refId": "C"
         }
@@ -137,7 +137,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, name) (rate(k6_http_req_duration_seconds_bucket{job=\"k6\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, name) (rate(k6_http_req_duration_seconds_bucket[5m])))",
           "legendFormat": "{{name}}",
           "refId": "A"
         }
@@ -156,7 +156,7 @@
   "timezone": "browser",
   "title": "k6 - Load Test",
   "uid": "k6-loadtest",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
 
