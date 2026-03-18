@@ -14,11 +14,13 @@ services:
     restart: unless-stopped
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
     ports:
       - "9090:9090"
     volumes:
       # Scrape VM2 instead of local containers.
       - ./observability/prometheus.vm1.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
 
   grafana:
     image: grafana/grafana:11.6.0
@@ -35,4 +37,7 @@ services:
     volumes:
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  prometheus_data:
 
