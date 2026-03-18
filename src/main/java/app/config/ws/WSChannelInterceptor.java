@@ -41,13 +41,12 @@ public class WSChannelInterceptor implements ChannelInterceptor {
     }
 
     private void disconnectAccessor(StompHeaderAccessor accessor) {
-        Optional.ofNullable(accessor.getUser())
-                .ifPresent(user -> {
-                    String sessionId = accessor.getSessionId();
-                    String username = user.getName();
-                    userSessionRegistry.removeSessionForUser(sessionId, username);
-                    LOGGER.info("WS DISCONNECT username={} sessionId={}", username, sessionId);
-                });
+        String sessionId = accessor.getSessionId();
+
+        userSessionRegistry.removeSession(sessionId).ifPresentOrElse(
+                username -> LOGGER.info("WS DISCONNECT username={} sessionId={}", username, sessionId),
+                () -> LOGGER.info("WS DISCONNECT sessionId={} (username unknown)", sessionId)
+        );
     }
 
     private void connectAccessor(StompHeaderAccessor accessor) {
