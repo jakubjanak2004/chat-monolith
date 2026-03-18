@@ -3,6 +3,8 @@ package app.config.ws;
 import app.service.ws.UserSessionRegistry;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class WSChannelInterceptor implements ChannelInterceptor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WSChannelInterceptor.class);
     private final JwtDecoder jwtDecoder;
     private final UserSessionRegistry userSessionRegistry;
 
@@ -39,7 +42,12 @@ public class WSChannelInterceptor implements ChannelInterceptor {
 
     private void disconnectAccessor(StompHeaderAccessor accessor) {
         Optional.ofNullable(accessor.getUser())
-                .ifPresent(user -> userSessionRegistry.removeSessionForUser(accessor.getSessionId(), user.getName()));
+                .ifPresent(user -> {
+                    String sessionId = accessor.getSessionId();
+                    String username = user.getName();
+                    userSessionRegistry.removeSessionForUser(sessionId, username);
+                    LOGGER.info("WS DISCONNECT username={} sessionId={}", username, sessionId);
+                });
     }
 
     private void connectAccessor(StompHeaderAccessor accessor) {
@@ -58,6 +66,9 @@ public class WSChannelInterceptor implements ChannelInterceptor {
         accessor.setUser(new UsernamePasswordAuthenticationToken(username, null, List.of()));
 
         Optional.ofNullable(accessor.getSessionId())
-                .ifPresent(sessionId -> userSessionRegistry.addSessionForUser(sessionId, username));
+                .ifPresent(sessionId -> {
+                    userSessionRegistry.addSessionForUser(sessionId, username);
+                    LOGGER.info("WS CONNECT username={} sessionId={}", username, sessionId);
+                });
     }
 }
