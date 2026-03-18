@@ -94,7 +94,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (!usersSeedProperties.enabled()) return;
 
         IntStream.rangeClosed(1, count).forEach(i -> {
-            chatUserGenerator.generateChatUser(String.format("test%d", i), "test");
+            chatUserGenerator.generateChatUser(String.format("test%d", i), "testing");
         });
     }
 }
