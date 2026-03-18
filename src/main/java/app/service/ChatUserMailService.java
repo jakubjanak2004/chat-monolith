@@ -26,6 +26,7 @@ public class ChatUserMailService {
         message.setSubject(String.format("Welcome %s", username));
         message.setText(String.format("Hi %s welcome to chat application", username));
 
-        mailSender.send(message);
+        // TODO not sending email right now
+//        mailSender.send(message);
     }
 }
