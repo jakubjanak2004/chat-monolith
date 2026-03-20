@@ -9,26 +9,21 @@ import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class UserSessionRegistry {
-    private final ConcurrentMap<String, Set<String>> usernameToSessionSet = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, String> sessionIdToUsername = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<String>> usernameToSessionMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> sessionIdToUsernameMap = new ConcurrentHashMap<>();
 
     public Set<String> getSessionSet(String username) {
-        return usernameToSessionSet.computeIfAbsent(username, key -> ConcurrentHashMap.newKeySet());
-    }
-
-    public void removeSessionForUser(String sessionId, String username) {
-        getSessionSet(username).remove(sessionId);
-        sessionIdToUsername.remove(sessionId, username);
+        return usernameToSessionMap.computeIfAbsent(username, key -> ConcurrentHashMap.newKeySet());
     }
 
     public void addSessionForUser(String sessionId, String username) {
         getSessionSet(username).add(sessionId);
-        sessionIdToUsername.put(sessionId, username);
+        sessionIdToUsernameMap.put(sessionId, username);
     }
 
     public Optional<String> removeSession(String sessionId) {
         if (sessionId == null) return Optional.empty();
-        String username = sessionIdToUsername.remove(sessionId);
+        String username = sessionIdToUsernameMap.remove(sessionId);
         if (username != null) {
             getSessionSet(username).remove(sessionId);
         }
@@ -36,10 +31,10 @@ public class UserSessionRegistry {
     }
 
     public int getActiveSessionCount() {
-        return usernameToSessionSet.values().stream().mapToInt(Set::size).sum();
+        return usernameToSessionMap.values().stream().mapToInt(Set::size).sum();
     }
 
     public int getActiveUserCount() {
-        return (int) usernameToSessionSet.values().stream().filter(s -> !s.isEmpty()).count();
+        return (int) usernameToSessionMap.values().stream().filter(s -> !s.isEmpty()).count();
     }
 }

@@ -10,4 +10,6 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findAllByChat(Chat chat, Pageable pageable);
+
+    Integer countByChat_Id(UUID chatId);
 }

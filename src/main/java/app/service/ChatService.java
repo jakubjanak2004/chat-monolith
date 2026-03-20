@@ -254,4 +254,8 @@ public class ChatService {
         Invitation invitation = invitationRepository.findFirstByChat_IdAndChatUser_Username(chatId, username).orElseThrow();
         invitationRepository.delete(invitation);
     }
+
+    public Integer getMessagesCountForChat(UUID chatId) {
+        return messageRepository.countByChat_Id(chatId);
+    }
 }

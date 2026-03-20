@@ -4,11 +4,11 @@ import app.dto.request.ActiveMembershipUpdateDTO;
 import app.dto.request.CreateChatDTO;
 import app.dto.request.CreateMessageDTO;
 import app.dto.request.GiveUpAdminDTO;
-import app.dto.response.ChatDTO;
 import app.dto.response.ActiveMembershipDTO;
+import app.dto.response.ChatDTO;
 import app.dto.response.InvitationDTO;
-import app.dto.response.UserInvitationsDTO;
 import app.dto.response.MessageDTO;
+import app.dto.response.UserInvitationsDTO;
 import app.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -72,13 +72,13 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value="/{chatId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{chatId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatDTO> getChat(@PathVariable UUID chatId) {
         LOGGER.info("GET /chats/{}", chatId);
         return ResponseEntity.ok(chatService.getChatById(chatId));
     }
 
-    @PostMapping(value="/{chatId}/admin/transfer")
+    @PostMapping(value = "/{chatId}/admin/transfer")
     public ResponseEntity<Void> giveUpAdminMembership(@PathVariable UUID chatId, Principal principal, @RequestBody GiveUpAdminDTO giveUpAdminDTO) {
         LOGGER.info("POST /chats/{}/admin/transfer", chatId);
         chatService.giveUpAdminMembership(chatId, principal.getName(), giveUpAdminDTO);
@@ -112,7 +112,7 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value="/{chatId}/invitations", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{chatId}/invitations", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<InvitationDTO>> getInvitationsForChat(@PathVariable UUID chatId) {
         LOGGER.info("GET /chats/{}/invitations", chatId);
         return ResponseEntity.ok(chatService.getInvitationsForChat(chatId));
@@ -130,6 +130,12 @@ public class ChatController {
         LOGGER.info("GET /chats/{}/messages?page={}&size={}&sort={}",
                 chatId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         return ResponseEntity.ok(chatService.getMessagesForChat(chatId, pageable));
+    }
+
+    @GetMapping(value = "/{chatId}/messages/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Integer> getMessagesCount(@PathVariable UUID chatId) {
+        LOGGER.info("GET /chats/{}/messages/count", chatId);
+        return ResponseEntity.ok(chatService.getMessagesCountForChat(chatId));
     }
 
     @PostMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)

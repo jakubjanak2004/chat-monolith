@@ -23,7 +23,7 @@ import java.time.Instant;
 @Validated
 public class ChatWsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatWsService.class);
-    private final SimpMessagingTemplate template;
+    private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
     private final UserSessionRegistry userSessionRegistry;
@@ -43,7 +43,7 @@ public class ChatWsService {
                     LOGGER.info("WS sendToUser username={}", username);
 
                     // Standard Spring user destination (works across SockJS/raw WS sessions).
-                    template.convertAndSendToUser(username, "/queue/messages", messageDTO);
+                    simpMessagingTemplate.convertAndSendToUser(username, "/queue/messages", messageDTO);
 
                     // Backward-compatible legacy destination by explicit session suffix.
                     // todo now disabling the queue/...
