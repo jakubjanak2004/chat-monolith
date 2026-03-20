@@ -46,9 +46,10 @@ public class ChatWsService {
                     template.convertAndSendToUser(username, "/queue/messages", messageDTO);
 
                     // Backward-compatible legacy destination by explicit session suffix.
-                    userSessionRegistry.getSessionSet(username).forEach(
-                            sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO)
-                    );
+                    // todo now disabling the queue/...
+//                    userSessionRegistry.getSessionSet(username).forEach(
+//                            sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO)
+//                    );
                 });
 
         // record message creation time
