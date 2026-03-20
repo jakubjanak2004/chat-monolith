@@ -38,9 +38,18 @@ public class ChatWsService {
 
         message.getChat().getChatMemberships().stream()
                 .map(ChatMembership::getChatUser)
-                .peek(chatUser -> LOGGER.info("WS sendToUser username={}", chatUser.getUsername()))
-                .flatMap(chatUser -> userSessionRegistry.getSessionSet(chatUser.getUsername()).stream())
-                .forEach(sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO));
+                .forEach(chatUser -> {
+                    String username = chatUser.getUsername();
+                    LOGGER.info("WS sendToUser username={}", username);
+
+                    // Standard Spring user destination (works across SockJS/raw WS sessions).
+                    template.convertAndSendToUser(username, "/queue/messages", messageDTO);
+
+                    // Backward-compatible legacy destination by explicit session suffix.
+                    userSessionRegistry.getSessionSet(username).forEach(
+                            sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO)
+                    );
+                });
 
         // record message creation time
         Instant created = message.getCreated();
