@@ -10,7 +10,7 @@ public record UsersSeedProperties(
         @DefaultValue("false") boolean enabled,
         @DefaultValue("10") @Min(1) int count,
         @DefaultValue("10") @Min(1) int chatCount,
-        @DefaultValue("10") @Min(1) int messageCount,
+        @DefaultValue("100") @Min(1) int messageCount,
         @DefaultValue("password") @NotBlank String password
 ) {
 }
