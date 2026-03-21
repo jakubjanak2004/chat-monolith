@@ -80,7 +80,7 @@ public class Generator {
         return candidate;
     }
 
-    public void generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
+    public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
         int wordCount = ThreadLocalRandom.current().nextInt(wordCountFrom, wordCountTo + 1);
         List<ChatUser> chatUsers = chat.getChatMemberships().stream()
                 .map(ChatMembership::getChatUser)
@@ -97,7 +97,7 @@ public class Generator {
                 responseTo = content.get(idx);
             }
         }
-        messageRepository.save(
+        return messageRepository.save(
                 Message.builder()
                         .content(faker.lorem().sentence(wordCount))
                         .responseTo(responseTo)

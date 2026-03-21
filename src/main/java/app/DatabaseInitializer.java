@@ -4,6 +4,7 @@ import app.config.props.AdminSeedProperties;
 import app.config.props.UsersSeedProperties;
 import app.entity.Chat;
 import app.entity.ChatUser;
+import app.entity.Message;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
 import app.util.Generator;
@@ -119,9 +120,13 @@ public class DatabaseInitializer implements CommandLineRunner {
                 String chatName = String.format("test chat %d-%d", c, i + 1);
                 Chat chat = Chat.createChatWithOwnerAndMembers(chatName, owner, List.of(other));
                 Chat savedChat = chatRepository.save(chat);
+                LOGGER.info("created chat {}", chat);
 
                 IntStream.rangeClosed(1, messagesCount).forEach(n ->
-                        chatUserGenerator.generateMessagesForChat(savedChat, 3, 12)
+                        {
+                            Message message = chatUserGenerator.generateMessagesForChat(savedChat, 3, 12);
+                            LOGGER.info("created message {} for chat {}", message, chat);
+                        }
                 );
             }
         }
