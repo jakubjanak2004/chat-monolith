@@ -99,7 +99,10 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (!usersSeedProperties.enabled()) return;
 
         List<ChatUser> users = IntStream.rangeClosed(1, count)
-                .mapToObj(i -> getOrCreateTestUser(String.format("test%d", i)))
+                .mapToObj(i -> {
+                    LOGGER.info("creating or retrieving chat user {}", i);
+                    return getOrCreateTestUser(String.format("test%d", i));
+                })
                 .toList();
 
         if (users.size() < 2) {
