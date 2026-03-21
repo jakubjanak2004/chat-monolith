@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @Configuration
@@ -38,7 +39,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         LOGGER.info("firstChatUser: {}", firstChatUser);
         createAdmin(firstChatUser);
         LOGGER.info("creating testing users");
-        createChatUsers(2);
+        createChatUsers();
         LOGGER.info("Seeding finished");
     }
 
@@ -90,11 +91,41 @@ public class DatabaseInitializer implements CommandLineRunner {
         return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), usersSeedProperties.password());
     }
 
-    private void createChatUsers(int count) {
+    private void createChatUsers() {
+        createChatUsers(usersSeedProperties.count(), usersSeedProperties.chatCount(), usersSeedProperties.messageCount());
+    }
+
+    private void createChatUsers(int count, int chatCount, int messagesCount) {
         if (!usersSeedProperties.enabled()) return;
 
-        IntStream.rangeClosed(1, count).forEach(i -> {
-            chatUserGenerator.generateChatUser(String.format("test%d", i), "testing");
-        });
+        List<ChatUser> users = IntStream.rangeClosed(1, count)
+                .mapToObj(i -> getOrCreateTestUser(String.format("test%d", i)))
+                .toList();
+
+        if (users.size() < 2) {
+            LOGGER.info("Skipping test chat creation, need at least 2 users. users={}", users.size());
+            return;
+        }
+
+        ChatUser owner = users.getFirst();
+        List<ChatUser> others = users.subList(1, users.size());
+
+        for (int c = 1; c <= chatCount; c++) {
+            for (int i = 0; i < others.size(); i++) {
+                ChatUser other = others.get(i);
+                String chatName = String.format("test chat %d-%d", c, i + 1);
+                Chat chat = Chat.createChatWithOwnerAndMembers(chatName, owner, List.of(other));
+                Chat savedChat = chatRepository.save(chat);
+
+                IntStream.rangeClosed(1, messagesCount).forEach(n ->
+                        chatUserGenerator.generateMessagesForChat(savedChat, 3, 12)
+                );
+            }
+        }
+    }
+
+    private ChatUser getOrCreateTestUser(String username) {
+        Optional<ChatUser> existing = chatUserRepository.findByUsername(username);
+        return existing.orElseGet(() -> chatUserGenerator.generateChatUser(username, "testing"));
     }
 }

@@ -27,9 +27,9 @@ public class Generator {
     private final PasswordEncoder passwordEncoder;
     private final MessageRepository messageRepository;
 
-    public void generateChatUser(String username, String password) {
+    public ChatUser generateChatUser(String username, String password) {
         ChatUser chatUser = constructNewUser(username, password);
-        chatUserRepository.save(chatUser);
+        return chatUserRepository.save(chatUser);
     }
 
     private ChatUser constructNewUser(String password) {
