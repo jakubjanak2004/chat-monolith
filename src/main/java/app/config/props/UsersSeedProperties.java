@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record UsersSeedProperties(
         @DefaultValue("false") boolean enabled,
         @DefaultValue("10") @Min(1) int count,
-        @DefaultValue("50") @Min(1) int chatCount,
-        @DefaultValue("50") @Min(1) int messageCount,
+        @DefaultValue("10") @Min(1) int chatCount,
+        @DefaultValue("10") @Min(1) int messageCount,
         @DefaultValue("password") @NotBlank String password
 ) {
 }
