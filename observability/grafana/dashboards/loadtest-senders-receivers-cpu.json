@@ -116,7 +116,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
-      "description": "Concurrent VUs per scenario from custom Gauge `scenario_active_vus` → Prometheus `k6_scenario_active_vus`. Without the snippet in `observability/k6-scenario-active-vus.md`, this panel will be empty. Both series share one Y-axis (same unit: VUs).",
+      "description": "Concurrent VUs: script emits `k6_scenario_active_vus{scenario,vu}` (one series per VU). `sum()` adds all `vu` series per scenario. Do not use only `{scenario}` on the Gauge or remote write often shows ~1.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -288,12 +288,66 @@
       ],
       "title": "Debug: HTTP + WS msg rates by scenario",
       "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "description": "Custom k6 Trend `ws_delivery_latency_ms` exported via Prometheus remote write as `k6_ws_delivery_latency_ms_avg`. Matches `prom_query_range(\"k6_ws_delivery_latency_ms_avg\", ...)`. If empty: run k6 with `-o experimental-prometheus-rw` and set `K6_PROMETHEUS_RW_SERVER_URL` to your Prometheus `/api/v1/write` endpoint.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "light-blue" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "min": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 },
+      "id": 6,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "k6_ws_delivery_latency_ms_avg",
+          "legendFormat": "WS delivery latency avg — {{scenario}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "k6: WS delivery latency avg (ms) — remote write check",
+      "type": "timeseries"
     }
   ],
   "refresh": "5s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["k6", "loadtest", "cpu", "websocket"],
+  "tags": ["k6", "loadtest", "cpu", "websocket", "latency"],
   "templating": {
     "list": [
       {
@@ -318,6 +372,6 @@
   "timezone": "browser",
   "title": "Load test: senders vs receivers + CPU",
   "uid": "loadtest-senders-receivers-cpu",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
