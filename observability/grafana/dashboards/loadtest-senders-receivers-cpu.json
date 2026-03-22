@@ -30,7 +30,7 @@
       "id": 1,
       "options": {
         "code": { "language": "markdown", "showLineNumbers": false, "showMiniMap": false },
-        "content": "### Load vs CPU (thesis narrative)\n\n- **Orange / yellow**: `http_senders` and `ws_receivers` virtual users (from k6 → Prometheus).\n- **Green**: JVM **process** CPU on the backend (`process_cpu_usage`, 0–100%).\n\n**Expected:** senders stay flat while receivers rise → **CPU rises** with listeners → scaling out instances helps for connection-heavy load.\n\nIf VU lines are empty, open Prometheus and confirm labels on `k6_vus` (e.g. `scenario` names must match your k6 script).",
+        "content": "### Load vs CPU (thesis narrative)\n\n- **Orange / yellow**: **Per-scenario load** from k6 (HTTP request rate vs WebSocket message receive rate). These metrics **do** carry the `scenario` label.\n- **Green**: JVM **process** CPU on the backend (`process_cpu_usage`).\n\n**Why not “VUs per scenario”?** k6’s built-in `k6_vus` gauge is **not** emitted with a `scenario` label (see [k6#3957](https://github.com/grafana/k6/issues/3957)), so Prometheus only shows **one combined** VU count. Use **HTTP + WS rates** here instead (or add custom metrics if you use a non–`k6/ws` client).\n\n**Expected:** sender HTTP rate ~flat while WS recv rate rises with more listeners → **CPU rises** → horizontal scaling for listener-heavy load.",
         "mode": "markdown"
       },
       "title": "How to read this dashboard",
@@ -38,7 +38,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
-      "description": "k6 virtual users per scenario (requires k6 → Prometheus remote write). Scenario names match `performance-test/scripts/intensive_messaging_ramping.js`.",
+      "description": "Uses `k6_http_reqs_total` and `k6_ws_msgs_received_total` — both include `scenario`. Requires WebSocket traffic via **k6/ws** or **k6/websockets** for WS line. If WS line is empty, see debug panel or use `k6_data_received_total` in Prometheus.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -65,15 +65,15 @@
           },
           "mappings": [],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
-          "unit": "none"
+          "unit": "reqps"
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "HTTP senders (VU)" },
+            "matcher": { "id": "byName", "options": "HTTP senders (req/s)" },
             "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
           },
           {
-            "matcher": { "id": "byName", "options": "WS receivers (VU)" },
+            "matcher": { "id": "byName", "options": "WS receivers (msg recv/s)" },
             "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
           }
         ]
@@ -88,21 +88,21 @@
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus" },
           "editorMode": "code",
-          "expr": "sum(k6_vus{scenario=\"http_senders\"})",
-          "legendFormat": "HTTP senders (VU)",
+          "expr": "sum(rate(k6_http_reqs_total{scenario=\"http_senders\"}[1m]))",
+          "legendFormat": "HTTP senders (req/s)",
           "range": true,
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus" },
           "editorMode": "code",
-          "expr": "sum(k6_vus{scenario=\"ws_receivers\"})",
-          "legendFormat": "WS receivers (VU)",
+          "expr": "sum(rate(k6_ws_msgs_received_total{scenario=\"ws_receivers\"}[1m]))",
+          "legendFormat": "WS receivers (msg recv/s)",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "k6: HTTP senders vs WS receivers (virtual users)",
+      "title": "k6 load by scenario (HTTP req/s vs WS msg recv/s)",
       "type": "timeseries"
     },
     {
@@ -168,7 +168,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
-      "description": "Single view: VU counts (left axis) and CPU (right axis). Useful for screenshots.",
+      "description": "Scenario-tagged load (HTTP + WS msg rates, left) vs CPU (right). Not raw VUs — see text panel.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -195,11 +195,11 @@
           },
           "mappings": [],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
-          "unit": "none"
+          "unit": "reqps"
         },
         "overrides": [
           {
-            "matcher": { "id": "byRegexp", "options": "/CPU|cpu|process/" },
+            "matcher": { "id": "byRegexp", "options": "/CPU|cpu|process|Backend/" },
             "properties": [
               { "id": "custom.axisPlacement", "value": "right" },
               { "id": "unit", "value": "percentunit" },
@@ -209,11 +209,11 @@
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "HTTP senders (VU)" },
+            "matcher": { "id": "byName", "options": "HTTP senders (req/s)" },
             "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
           },
           {
-            "matcher": { "id": "byName", "options": "WS receivers (VU)" },
+            "matcher": { "id": "byName", "options": "WS receivers (msg recv/s)" },
             "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
           }
         ]
@@ -228,16 +228,16 @@
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus" },
           "editorMode": "code",
-          "expr": "sum(k6_vus{scenario=\"http_senders\"})",
-          "legendFormat": "HTTP senders (VU)",
+          "expr": "sum(rate(k6_http_reqs_total{scenario=\"http_senders\"}[1m]))",
+          "legendFormat": "HTTP senders (req/s)",
           "range": true,
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus" },
           "editorMode": "code",
-          "expr": "sum(k6_vus{scenario=\"ws_receivers\"})",
-          "legendFormat": "WS receivers (VU)",
+          "expr": "sum(rate(k6_ws_msgs_received_total{scenario=\"ws_receivers\"}[1m]))",
+          "legendFormat": "WS receivers (msg recv/s)",
           "range": true,
           "refId": "B"
         },
@@ -250,15 +250,15 @@
           "refId": "C"
         }
       ],
-      "title": "Combined: VUs (left) + backend CPU (right)",
+      "title": "Combined: load by scenario (left) + backend CPU (right)",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
-      "description": "If the panels above show no k6 data, use this to see which `scenario` labels exist.",
+      "description": "Confirms per-scenario series for HTTP and WS message rates (`scenario` label present). `k6_vus` does not split this way — use Explore with `sum(k6_vus)` for the single combined VU gauge.",
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
+          "unit": "reqps",
           "custom": {
             "drawStyle": "line",
             "lineInterpolation": "smooth",
@@ -269,7 +269,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 31 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 31 },
       "id": 5,
       "options": {
         "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true },
@@ -279,13 +279,21 @@
         {
           "datasource": { "type": "prometheus", "uid": "Prometheus" },
           "editorMode": "code",
-          "expr": "sum by (scenario) (k6_vus)",
-          "legendFormat": "{{scenario}}",
+          "expr": "sum by (scenario) (rate(k6_http_reqs_total[1m]))",
+          "legendFormat": "http_reqs {{scenario}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum by (scenario) (rate(k6_ws_msgs_received_total[1m]))",
+          "legendFormat": "ws_msgs_recv {{scenario}}",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Debug: all k6_vus by scenario",
+      "title": "Debug: HTTP + WS msg rates by scenario",
       "type": "timeseries"
     }
   ],
