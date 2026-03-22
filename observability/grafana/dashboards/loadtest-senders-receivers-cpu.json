@@ -291,10 +291,10 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
-      "description": "Custom k6 Trend `ws_delivery_latency_ms` exported via Prometheus remote write as `k6_ws_delivery_latency_ms_avg`. Matches `prom_query_range(\"k6_ws_delivery_latency_ms_avg\", ...)`. If empty: run k6 with `-o experimental-prometheus-rw` and set `K6_PROMETHEUS_RW_SERVER_URL` to your Prometheus `/api/v1/write` endpoint.",
+      "description": "Custom k6 Trend `ws_delivery_latency_ms` → Prometheus names like `k6_ws_delivery_latency_ms_avg`, `_p95`, etc. This panel matches **all** `k6_ws_delivery_latency_ms*` series (not only `_avg`). If still empty: (1) k6 must use `-o experimental-prometheus-rw` + `K6_PROMETHEUS_RW_SERVER_URL` → same Prometheus Grafana uses; (2) run a test in the dashboard time range; (3) in **Explore** run `{__name__=~\".*ws_delivery.*\"}` to see the real names; (4) if you set `K6_PROMETHEUS_RW_TREND_STATS`, include `avg` or use the stats you export; (5) native histogram mode uses different metric names.",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "fixed", "fixedColor": "light-blue" },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -372,6 +372,6 @@
   "timezone": "browser",
   "title": "Load test: senders vs receivers + CPU",
   "uid": "loadtest-senders-receivers-cpu",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
