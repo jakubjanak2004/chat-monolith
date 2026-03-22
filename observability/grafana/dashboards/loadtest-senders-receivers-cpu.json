@@ -30,7 +30,7 @@
       "id": 1,
       "options": {
         "code": { "language": "markdown", "showLineNumbers": false, "showMiniMap": false },
-        "content": "### Load vs CPU (thesis narrative)\n\n- **First graph (dual Y-axis):** **Orange** = HTTP **req/s** (left scale). **Yellow** = WebSocket **messages received/s** (right scale). Different scales so the HTTP line is not flattened when WS traffic is much larger.\n- **CPU panel:** JVM **process** CPU (`process_cpu_usage`).\n\n**Why not “VUs per scenario”?** k6’s `k6_vus` has no `scenario` label in Prometheus ([k6#3957](https://github.com/grafana/k6/issues/3957)), so use **HTTP + WS rates** instead.\n\n**Expected:** HTTP sender rate ~flat while WS recv/s rises with more listeners → **CPU rises** → horizontal scaling for listener-heavy load.",
+        "content": "### Load vs CPU (thesis narrative)\n\n- **Rates (dual Y-axis):** **Orange** = HTTP **req/s** (left). **Yellow** = WS **msg recv/s** (right).\n- **VUs (single Y-axis):** **Orange** = HTTP sender VUs, **Yellow** = WS listener VUs — requires custom Gauge `scenario_active_vus` (see `observability/k6-scenario-active-vus.md`). Stock `k6_vus` cannot split by scenario.\n- **CPU:** JVM **process** CPU (`process_cpu_usage`).\n\n**Expected:** sender VUs / HTTP rate ~flat while receiver VUs / WS traffic rise → **CPU rises** → horizontal scaling for listener-heavy load.",
         "mode": "markdown"
       },
       "title": "How to read this dashboard",
@@ -116,6 +116,77 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "description": "Concurrent VUs per scenario from custom Gauge `scenario_active_vus` → Prometheus `k6_scenario_active_vus`. Without the snippet in `observability/k6-scenario-active-vus.md`, this panel will be empty. Both series share one Y-axis (same unit: VUs).",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Virtual users",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "HTTP senders (VUs)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "WS receivers (VUs)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 12 },
+      "id": 4,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum(k6_scenario_active_vus{scenario=\"http_senders\"})",
+          "legendFormat": "HTTP senders (VUs)",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum(k6_scenario_active_vus{scenario=\"ws_receivers\"})",
+          "legendFormat": "WS receivers (VUs)",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "k6 active VUs by scenario (custom Gauge — shared Y-axis)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
       "description": "Spring Boot / Micrometer: JVM process CPU (one core = up to 100% of that core; on multi-core hosts values can be normalized differently — compare trends).",
       "fieldConfig": {
         "defaults": {
@@ -156,7 +227,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 12 },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 21 },
       "id": 3,
       "options": {
         "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
@@ -191,7 +262,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 21 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 30 },
       "id": 5,
       "options": {
         "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true },
