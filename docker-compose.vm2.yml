@@ -82,6 +82,18 @@ services:
     volumes:
       - /:/host:ro,rslave
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    privileged: true
+
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
