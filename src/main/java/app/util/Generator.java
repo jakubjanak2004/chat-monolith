@@ -52,6 +52,7 @@ public class Generator {
                 responseTo = content.get(idx);
             }
         }
+
         return messageRepository.save(
                 Message.builder()
                         .content(faker.lorem().sentence(wordCount))
