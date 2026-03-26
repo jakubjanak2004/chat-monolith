@@ -19,6 +19,7 @@ import lombok.SneakyThrows;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,7 @@ public class ChatUserService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
+    @PreAuthorize("@chatUserSecurity.hasUsername(#username, authentication)")
     public void updateUserWithUsername(@Valid ChatUserUpdateDTO chatUserUpdateDTO, String username) {
         chatUserRepository.findByUsername(username)
                 .ifPresent(chatUser -> chatUserMapper.updateFromDto(chatUserUpdateDTO, chatUser));
@@ -82,6 +84,7 @@ public class ChatUserService {
     }
 
     @SneakyThrows
+    @PreAuthorize("@chatUserSecurity.hasUsername(#username, authentication)")
     public void updateUserProfilePicture(MultipartFile file, String username) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");

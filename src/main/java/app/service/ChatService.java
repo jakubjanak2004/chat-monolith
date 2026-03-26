@@ -35,6 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,18 +61,21 @@ public class ChatService {
     private final InvitationRepository invitationRepository;
     private final InvitationMapper invitationMapper;
 
+    @PreAuthorize("@chatUserSecurity.hasUsername(#username, authentication)")
     public Page<ChatDTO> getChatsForUsername(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
         return chatRepository.findChatsForUsername(username, queryNormalized, pageable)
                 .map(this::fromChatToDTO);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public Page<MessageDTO> getMessagesForChat(UUID chatId, Pageable pageable) {
         Chat chat = chatRepository.findById(chatId).orElseThrow();
         return messageRepository.findAllByChat(chat, pageable)
                 .map(messageMapper::toDTO);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public MessageDTO createMessageForChat(UUID chatId, @Valid CreateMessageDTO messageDTO, String username) {
         ChatUser chatUser = chatUserRepository.findByUsername(username).orElseThrow();
 
@@ -91,6 +95,7 @@ public class ChatService {
         return messageMapper.toDTO(saved);
     }
 
+    @PreAuthorize("@chatUserSecurity.hasUsername(#ownerUsername, authentication)")
     public ChatDTO getChatIdOfChatWithPerson(String otherUsername, String ownerUsername) {
         ChatUser chatUser = chatUserRepository.findByUsername(ownerUsername).orElseThrow();
         ChatUser otherUser = chatUserRepository.findByUsername(otherUsername).orElseThrow();
@@ -100,6 +105,7 @@ public class ChatService {
                 .toList().getFirst();
     }
 
+    @PreAuthorize("@chatUserSecurity.hasUsername(#ownerUsername, authentication)")
     public ChatDTO createChatForUser(@Valid CreateChatDTO dto, String ownerUsername) {
         ChatUser owner = chatUserRepository.findByUsername(ownerUsername)
                 .orElseThrow();
@@ -126,28 +132,21 @@ public class ChatService {
         return chatMapper.toDTO(saved, null);
     }
 
+    @PreAuthorize("@chatSecurity.canManageMessageWithId(#messageId, authentication)")
     public MessageDTO getMessage(UUID messageId) {
         return messageRepository.findById(messageId)
                 .map(messageMapper::toDTO)
                 .orElseThrow();
     }
 
-    private ChatDTO fromChatToDTO(Chat chat) {
-        Message lastMessage = messageRepository.findAllByChat(
-                        chat,
-                        PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "created"))
-                ).stream()
-                .findFirst()
-                .orElse(null);
-        return chatMapper.toDTO(chat, lastMessage);
-    }
-
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public ChatDTO getChatById(UUID chatId) {
         return chatRepository.findById(chatId)
                 .map(this::fromChatToDTO)
                 .orElseThrow();
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public List<ActiveMembershipDTO> getActiveMembershipsForChat(UUID chatId) {
         return activeMembershipRepository.findAllByChat_Id(chatId)
                 .stream()
@@ -155,11 +154,13 @@ public class ChatService {
                 .toList();
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithIdWhenMembershipIs(#chatId, 'ADMIN', authentication)")
     public void updateMembershipRole(UUID chatId, String username, @Valid ActiveMembershipUpdateDTO activeMembershipUpdateDTO) {
         activeMembershipRepository.findFirstByChat_IdAndChatUser_Username(chatId, username)
                 .ifPresent(activeMembership -> activeMembershipMapper.updateFromDTO(activeMembershipUpdateDTO, activeMembership));
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithIdWhenMembershipIs(#chatId, 'ADMIN', authentication)")
     public void giveUpAdminMembership(UUID chatId, String username, @Valid GiveUpAdminDTO giveUpAdminDTO) {
         ActiveMembership me = activeMembershipRepository
                 .findFirstByChat_IdAndChatUser_Username(chatId, username)
@@ -196,12 +197,14 @@ public class ChatService {
         me.setMembershipType(MembershipType.EDITOR);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithIdWhenMembershipIs(#chatId, 'ADMIN', authentication)")
     public void deleteMembershipFromChat(UUID chatId, String username) {
         ChatMembership chatMembership = chatMembershipRepository.findByChat_IdAndChatUser_Username(chatId, username)
                 .orElseThrow();
         chatMembershipRepository.delete(chatMembership);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithIdWhenMembershipIs(#chatId, 'ADMIN', authentication)")
     public void inviteChatUser(UUID chatId, String username) {
         Chat chat = chatRepository.findById(chatId).orElseThrow();
         ChatUser user = chatUserRepository.findByUsername(username).orElseThrow();
@@ -220,6 +223,7 @@ public class ChatService {
         invitationRepository.save(invitation);
     }
 
+    @PreAuthorize("@chatUserSecurity.hasUsername(#username, authentication)")
     public List<UserInvitationsDTO> getInvitationsForMe(String username) {
         return invitationRepository.findAllByChatUser_Username(username)
                 .stream()
@@ -227,11 +231,13 @@ public class ChatService {
                 .toList();
     }
 
+    @PreAuthorize("@chatSecurity.canManageMembershipWithId(#invitationId, authentication)")
     public void deleteInvitationWithId(UUID invitationId) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow();
         invitationRepository.delete(invitation);
     }
 
+    @PreAuthorize("@chatSecurity.canManageMembershipWithId(#invitationId, authentication)")
     public void acceptInvitationWithId(UUID invitationId) {
         Invitation invitation = invitationRepository.findById(invitationId).orElseThrow();
         invitationRepository.delete(invitation);
@@ -244,18 +250,31 @@ public class ChatService {
         activeMembershipRepository.save(activeMembership);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public List<InvitationDTO> getInvitationsForChat(UUID chatId) {
         return invitationRepository.findAllByChat_Id(chatId).stream()
                 .map(invitationMapper::toInvitationDTO)
                 .toList();
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithIdWhenMembershipIs(#chatId, 'ADMIN', authentication)")
     public void deleteInvitationForChatWithUser(UUID chatId, String username) {
         Invitation invitation = invitationRepository.findFirstByChat_IdAndChatUser_Username(chatId, username).orElseThrow();
         invitationRepository.delete(invitation);
     }
 
+    @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public Integer getMessagesCountForChat(UUID chatId) {
         return messageRepository.countByChat_Id(chatId);
+    }
+
+    private ChatDTO fromChatToDTO(Chat chat) {
+        Message lastMessage = messageRepository.findAllByChat(
+                        chat,
+                        PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "created"))
+                ).stream()
+                .findFirst()
+                .orElse(null);
+        return chatMapper.toDTO(chat, lastMessage);
     }
 }
