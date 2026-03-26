@@ -8,7 +8,11 @@ import app.entity.Message;
 import app.repository.ChatRepository;
 import app.repository.ChatUserRepository;
 import app.util.Generator;
+import app.util.ParallelEntitySeedFactory;
+import app.util.TextNormalize;
 import lombok.RequiredArgsConstructor;
+import net.datafaker.Faker;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -17,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Locale;
 import java.util.stream.IntStream;
 
 @Configuration
@@ -25,6 +29,7 @@ import java.util.stream.IntStream;
 @Transactional
 public class DatabaseInitializer implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializer.class);
+    private static final Faker faker = new Faker(Locale.forLanguageTag("sk"));
     private final ChatUserRepository chatUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final AdminSeedProperties adminSeedProperties;
@@ -33,14 +38,19 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final ChatRepository chatRepository;
 
     @Override
-    public void run(String... args) {
+    public void run(@NotNull String... args) {
         LOGGER.info("Seeding database...");
-        List<ChatUser> chatUsers = createUsers();
+        LOGGER.info("    Creating seed users...");
+        List<ChatUser> chatUsers = createSeedUsers();
         ChatUser firstChatUser = chatUsers.getFirst();
         LOGGER.info("firstChatUser: {}", firstChatUser);
+        LOGGER.info("    Seed users created");
+        LOGGER.info("    Creating admin...");
         createAdmin(firstChatUser);
-        LOGGER.info("creating testing users");
-        createChatUsers();
+        LOGGER.info("    Admin created");
+        LOGGER.info("    Creating testing users...");
+        createTestUsers(usersSeedProperties.count(), usersSeedProperties.password(), usersSeedProperties.chatCount(), usersSeedProperties.messageCount());
+        LOGGER.info("    Testing users created...");
         LOGGER.info("Seeding finished");
     }
 
@@ -85,26 +95,47 @@ public class DatabaseInitializer implements CommandLineRunner {
                 );
     }
 
-    private List<ChatUser> createUsers() {
+    private List<ChatUser> createSeedUsers() {
+        // todo add profile pic to users
         if (!usersSeedProperties.enabled()) return List.of();
 
-        // todo add profile pic to users
-        return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), usersSeedProperties.password());
+        ParallelEntitySeedFactory<ChatUser> parallelEntitySeedFactory = new ParallelEntitySeedFactory<>(i -> {
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = faker.internet().emailAddress();
+            String encodedPassword = passwordEncoder.encode(usersSeedProperties.password());
+            String normalizedUsername = TextNormalize.normalize(String.format("%s%s", firstName, lastName));
+
+            return ChatUser.builder()
+                    .username(String.format("%s-%d", normalizedUsername, i))
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .password(encodedPassword)
+                    .build();
+        });
+        return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), parallelEntitySeedFactory);
     }
 
-    private void createChatUsers() {
-        createChatUsers(usersSeedProperties.count(), usersSeedProperties.chatCount(), usersSeedProperties.messageCount());
-    }
-
-    private void createChatUsers(int count, int chatCount, int messagesCount) {
+    private void createTestUsers(int count, String password, int chatCount, int messagesCount) {
         if (!usersSeedProperties.enabled()) return;
 
-        List<ChatUser> users = IntStream.rangeClosed(1, count)
-                .mapToObj(i -> {
-                    LOGGER.info("creating or retrieving chat user {}", i);
-                    return getOrCreateTestUser(String.format("test%d", i));
-                })
-                .toList();
+        ParallelEntitySeedFactory<ChatUser> parallelEntitySeedFactory = new ParallelEntitySeedFactory<>(i -> {
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = faker.internet().emailAddress();
+            String encodedPassword = passwordEncoder.encode(password);
+
+            return ChatUser.builder()
+                    .username(String.format("test%d", i))
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .password(encodedPassword)
+                    .build();
+        });
+
+        List<ChatUser> users = chatUserGenerator.generateChatUsers(count, parallelEntitySeedFactory);
 
         if (users.size() < 2) {
             LOGGER.info("Skipping test chat creation, need at least 2 users. users={}", users.size());
@@ -125,15 +156,10 @@ public class DatabaseInitializer implements CommandLineRunner {
                 IntStream.rangeClosed(1, messagesCount).forEach(n ->
                         {
                             Message message = chatUserGenerator.generateMessagesForChat(savedChat, 3, 12);
-                            LOGGER.info("created message {} for chat {}", message, chat);
+//                            LOGGER.info("created message {} for chat {}", message, chat);
                         }
                 );
             }
         }
-    }
-
-    private ChatUser getOrCreateTestUser(String username) {
-        Optional<ChatUser> existing = chatUserRepository.findByUsername(username);
-        return existing.orElseGet(() -> chatUserGenerator.generateChatUser(username, "testing"));
     }
 }

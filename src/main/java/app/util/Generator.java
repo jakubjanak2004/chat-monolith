@@ -7,77 +7,32 @@ import app.entity.Message;
 import app.repository.ChatUserRepository;
 import app.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import net.datafaker.Faker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import net.datafaker.Faker;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @RequiredArgsConstructor
+// TODO: do not use repository.save() when list of objects is created, use saveAll() always
 public class Generator {
     private static final Faker faker = new Faker(Locale.forLanguageTag("sk"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(Generator.class);
     private final ChatUserRepository chatUserRepository;
-    private final PasswordEncoder passwordEncoder;
     private final MessageRepository messageRepository;
 
-    public ChatUser generateChatUser(String username, String password) {
-        ChatUser chatUser = constructNewUser(username, password);
-        return chatUserRepository.save(chatUser);
-    }
-
-    private ChatUser constructNewUser(String password) {
-        String firstName = faker.name().firstName();
-        String lastName = faker.name().lastName();
-        String username = ensureUniqueUsername(String.format("%s %s", firstName, lastName));
-        String email = faker.internet().emailAddress();
-        String encodedPassword = passwordEncoder.encode(password);
-
-        return ChatUser.builder()
-                .username(username)
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName)
-                .password(encodedPassword)
-                .build();
-    }
-
-    private ChatUser constructNewUser(String username, String password) {
-        String firstName = faker.name().firstName();
-        String lastName = faker.name().lastName();
-        String email = faker.internet().emailAddress();
-        String encodedPassword = passwordEncoder.encode(password);
-        String uniqueUsername = ensureUniqueUsername(username);
-
-        return ChatUser.builder()
-                .username(uniqueUsername)
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName)
-                .password(encodedPassword)
-                .build();
-    }
-
-    public List<ChatUser> generateChatUsers(int count, String password) {
-        List<ChatUser> chatUserList = IntStream.rangeClosed(1, count)
-                .mapToObj(i -> constructNewUser(password))
-                .toList();
-        return chatUserRepository.saveAll(chatUserList);
-    }
-
-    private String ensureUniqueUsername(String base) {
-        String candidate = base;
-        AtomicInteger suffix = new AtomicInteger(2);
-        while (chatUserRepository.existsByUsername(candidate)) {
-            candidate = base + " " + suffix.getAndIncrement();
-        }
-        return candidate;
+    public List<ChatUser> generateChatUsers(int count, ParallelEntitySeedFactory<ChatUser> parallelEntitySeedFactory) {
+        List<ChatUser> chatUserList = parallelEntitySeedFactory.createEntities(count);
+        LOGGER.info("Saving ChatUser instances...");
+        List<ChatUser> chatUsersSavedList = chatUserRepository.saveAll(chatUserList);
+        LOGGER.info("ChatUser instances saved");
+        return chatUsersSavedList;
     }
 
     public Message generateMessagesForChat(Chat chat, int wordCountFrom, int wordCountTo) {
