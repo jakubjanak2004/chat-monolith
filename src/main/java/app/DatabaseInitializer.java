@@ -49,6 +49,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         ChatUser firstChatUser = chatUsers.getFirst();
         createAdmin(firstChatUser);
         createTestUsers(usersSeedProperties.count(), usersSeedProperties.password(), usersSeedProperties.chatCount(), usersSeedProperties.messageCount());
+        LOGGER.info("Seeding finished");
     }
 
     private void createAdmin(ChatUser chatUser) {
