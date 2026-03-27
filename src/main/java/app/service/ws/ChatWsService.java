@@ -46,10 +46,10 @@ public class ChatWsService {
                     simpMessagingTemplate.convertAndSendToUser(username, "/queue/messages", messageDTO);
 
                     // Backward-compatible legacy destination by explicit session suffix.
-                    // todo now disabling the queue/...
-//                    userSessionRegistry.getSessionSet(username).forEach(
-//                            sessionId -> template.convertAndSend("/queue/messages-user" + sessionId, messageDTO)
-//                    );
+                    // todo ideally move to the first way of sending the messageDTO defined above so that we do not have to use this sessionId bound method
+                    userSessionRegistry.getSessionSet(username).forEach(
+                            sessionId -> simpMessagingTemplate.convertAndSend("/queue/messages-user" + sessionId, messageDTO)
+                    );
                 });
 
         // record message creation time
