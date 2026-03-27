@@ -126,10 +126,10 @@ public class ChatController {
     }
 
     @GetMapping(value = "/{chatId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, @ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<MessageDTO>> getMessagesForChat(@PathVariable UUID chatId, @RequestParam(required = false) String query, @ParameterObject Pageable pageable) {
         LOGGER.info("GET /chats/{}/messages?page={}&size={}&sort={}",
                 chatId, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        return ResponseEntity.ok(chatService.getMessagesForChat(chatId, pageable));
+        return ResponseEntity.ok(chatService.getMessagesForChat(query, chatId, pageable));
     }
 
     @GetMapping(value = "/{chatId}/messages/count", produces = MediaType.APPLICATION_JSON_VALUE)

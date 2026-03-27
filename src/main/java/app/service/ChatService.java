@@ -69,9 +69,9 @@ public class ChatService {
     }
 
     @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
-    public Page<MessageDTO> getMessagesForChat(UUID chatId, Pageable pageable) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow();
-        return messageRepository.findAllByChat(chat, pageable)
+    public Page<MessageDTO> getMessagesForChat(String query, UUID chatId, Pageable pageable) {
+        String queryNormalized = TextNormalize.normalize(query);
+        return messageRepository.findMessages(chatId, queryNormalized, pageable)
                 .map(messageMapper::toDTO);
     }
 
