@@ -141,6 +141,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         }
 
         ChatUser owner = users.getFirst();
+        LOGGER.info("Created Chat Owner: {}", owner);
         List<ChatUser> others = users.subList(1, users.size());
 
         AtomicInteger atomicInteger = new AtomicInteger(0);
