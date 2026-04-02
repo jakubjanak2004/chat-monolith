@@ -170,7 +170,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .build();
         });
 
-        List<Message> messageList = parallelMessageSeedFactory.createEntities(messagesCount);
+        List<Message> messageList = parallelMessageSeedFactory.createEntities(messagesCount * chatList.size());
         messageRepository.saveAll(messageList);
     }
 }
