@@ -62,4 +62,8 @@ public class Generator {
                         .build()
         );
     }
+
+    public long getNumberOfUsers() {
+        return chatUserRepository.count();
+    }
 }

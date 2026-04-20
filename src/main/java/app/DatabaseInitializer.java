@@ -38,18 +38,23 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final AdminSeedProperties adminSeedProperties;
     private final UsersSeedProperties usersSeedProperties;
-    private final Generator chatUserGenerator;
+    private final Generator generator;
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
 
     @Override
     public void run(@NotNull String... args) {
+        if (databaseNotEmpty()) return;
         LOGGER.info("Seeding database...");
         List<ChatUser> chatUsers = createSeedUsers();
         ChatUser firstChatUser = chatUsers.getFirst();
         createAdmin(firstChatUser);
         createTestUsers(usersSeedProperties.count(), usersSeedProperties.password(), usersSeedProperties.chatCount(), usersSeedProperties.messageCount());
         LOGGER.info("Seeding finished");
+    }
+
+    private boolean databaseNotEmpty() {
+        return generator.getNumberOfUsers() > 0;
     }
 
     private void createAdmin(ChatUser chatUser) {
@@ -86,7 +91,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         chatRepository.saveAll(chats);
 
         IntStream.rangeClosed(1, adminSeedProperties.numOfMessages())
-                .forEach(i -> chatUserGenerator.generateMessagesForChat(
+                .forEach(i -> generator.generateMessagesForChat(
                         chats.getFirst(),
                         adminSeedProperties.messageWordCountFrom(),
                         adminSeedProperties.messageWordCountTo())
@@ -112,7 +117,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .password(encodedPassword)
                     .build();
         });
-        return chatUserGenerator.generateChatUsers(usersSeedProperties.count(), parallelEntitySeedFactory);
+        return generator.generateChatUsers(usersSeedProperties.count(), parallelEntitySeedFactory);
     }
 
     private void createTestUsers(int count, String password, int chatCount, int messagesCount) {
@@ -133,7 +138,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .build();
         });
 
-        List<ChatUser> users = chatUserGenerator.generateChatUsers(count, parallelEntitySeedFactory);
+        List<ChatUser> users = generator.generateChatUsers(count, parallelEntitySeedFactory);
 
         if (users.size() < 2) {
             LOGGER.info("Skipping test chat creation, need at least 2 users. users={}", users.size());
