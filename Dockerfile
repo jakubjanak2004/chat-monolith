@@ -32,6 +32,11 @@ RUN ./mvnw -q -DskipTests package
 ############################
 FROM eclipse-temurin:21-jre-jammy AS runtime
 
+# curl: used by Swarm/Compose healthchecks in stack.yml (JRE image has no curl by default).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Run as non-root.
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
 WORKDIR /app

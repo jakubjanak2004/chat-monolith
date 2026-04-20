@@ -1,14 +1,21 @@
-#
-# Prometheus config for local docker-compose.
-# Scrapes the Spring Boot app's actuator Prometheus endpoint.
-#
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
+  scrape_interval: 10s
+  evaluation_interval: 10s
 
 scrape_configs:
   - job_name: chat-monolith
     metrics_path: /actuator/prometheus
     static_configs:
-      # Metrics are served from the management port (management.server.port)
-      - targets: ["app:9091"]
+      - targets: ["178.104.73.186:9091"]
+
+  - job_name: chat-monolith-postgres
+    static_configs:
+      - targets: ["178.104.73.186:9187"]
+
+  - job_name: chat-monolith-node
+    static_configs:
+      - targets: ["178.104.73.186:9100"]
+
+  - job_name: chat-monolith-cadvisor
+    static_configs:
+      - targets: ["178.104.73.186:8080"]

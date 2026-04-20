@@ -1,0 +1,1 @@
+docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/jakubjanak2004/be_monolith:latest -f Dockerfile . --push

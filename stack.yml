@@ -1,0 +1,155 @@
+version: "3.9"
+
+services:
+  gateway:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    configs:
+      - source: gateway_nginx_conf
+        target: /etc/nginx/nginx.conf
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  app:
+    image: ghcr.io/jakubjanak2004/be_monolith:latest
+    ports:
+#      todo remove the opened ports entirelly
+      - "8090:8080"
+      # Actuator/metrics (management.server.port)
+      - "9091:9091"
+    env_file:
+      - .env
+    environment:
+      SERVER_ADDRESS: "0.0.0.0"
+
+      SPRING_MAIL_HOST: "mailpit"
+      SPRING_MAIL_PORT: "1025"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+
+      # PostgreSQL (overrides application.properties defaults inside containers)
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/chat_monolith"
+      SPRING_DATASOURCE_USERNAME: "chat"
+      SPRING_DATASOURCE_PASSWORD: "chat"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+
+      # If you want persistence later, uncomment and adjust:
+      # SPRING_DATASOURCE_URL: "jdbc:h2:file:/data/testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/actuator/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    volumes:
+      # Swarm requires an absolute container path: "name" alone is rejected as invalid target.
+      - app_data:/tmp
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: chat_monolith
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chat
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    configs:
+      - source: prometheus_yml
+        target: /etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    environment:
+      DATA_SOURCE_NAME: "postgresql://chat:chat@postgres:5432/chat_monolith?sslmode=disable"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: overlay
+
+configs:
+  gateway_nginx_conf:
+    file: ./gateway/nginx.conf
+  prometheus_yml:
+    file: ./observability/prometheus.yml
+
+volumes:
+  postgres_data:
+  app_data:
+  prometheus_data:
