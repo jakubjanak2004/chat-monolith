@@ -46,8 +46,7 @@ COPY --from=build /workspace/target/*.jar /app/app.jar
 
 USER appuser
 
-# The app listens on 8090; Actuator runs on 9091 (see application.properties).
-EXPOSE 8090
+EXPOSE 8080
 EXPOSE 9091
 
 # Optional: default JVM tuning for containers; override via JAVA_TOOL_OPTIONS if desired.

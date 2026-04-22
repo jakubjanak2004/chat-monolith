@@ -18,7 +18,7 @@ services:
   app:
     image: ghcr.io/jakubjanak2004/be_monolith:latest
     ports:
-#      todo remove the opened ports entirelly
+      #      todo remove the opened ports entirelly
       - "8090:8080"
       # Actuator/metrics (management.server.port)
       - "9091:9091"
@@ -51,7 +51,9 @@ services:
       # Swarm requires an absolute container path: "name" alone is rejected as invalid target.
       - app_data:/tmp
     networks:
-      - backend
+      backend:
+        aliases:
+          - app
 
   postgres:
     image: postgres:17-alpine
@@ -93,7 +95,9 @@ services:
       restart_policy:
         condition: on-failure
     networks:
-      - backend
+      backend:
+        aliases:
+          - prometheus
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.15.0
