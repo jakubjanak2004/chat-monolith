@@ -38,16 +38,6 @@ services:
       SPRING_DATASOURCE_USERNAME: "chat"
       SPRING_DATASOURCE_PASSWORD: "chat"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-
-      # If you want persistence later, uncomment and adjust:
-      # SPRING_DATASOURCE_URL: "jdbc:h2:file:/data/testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
-      # SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9091/actuator/health" ]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
     volumes:
       # Swarm requires an absolute container path: "name" alone is rejected as invalid target.
       - app_data:/tmp
