@@ -65,7 +65,7 @@ public class ChatService {
     public Page<ChatDTO> getChatsForUsername(String query, String username, Pageable pageable) {
         String queryNormalized = TextNormalize.normalize(query);
         return chatRepository.findChatsForUsername(username, queryNormalized, pageable)
-                .map(this::fromChatToDTO);
+                .map(chatMapper::toDTO);
     }
 
     @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
@@ -101,7 +101,7 @@ public class ChatService {
         ChatUser otherUser = chatUserRepository.findByUsername(otherUsername).orElseThrow();
         return chatRepository.findChatsWithExactlyParticipants(List.of(chatUser.getUsername(), otherUser.getUsername()))
                 .stream()
-                .map(this::fromChatToDTO)
+                .map(chatMapper::toDTO)
                 .toList().getFirst();
     }
 
@@ -129,7 +129,7 @@ public class ChatService {
         Chat chat = Chat.createChatWithOwnerAndMembers(dto.name(), owner, members);
 
         Chat saved = chatRepository.save(chat);
-        return chatMapper.toDTO(saved, null);
+        return chatMapper.toDTO(saved);
     }
 
     @PreAuthorize("@chatSecurity.canManageMessageWithId(#messageId, authentication)")
@@ -142,7 +142,7 @@ public class ChatService {
     @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public ChatDTO getChatById(UUID chatId) {
         return chatRepository.findById(chatId)
-                .map(this::fromChatToDTO)
+                .map(chatMapper::toDTO)
                 .orElseThrow();
     }
 
@@ -266,15 +266,5 @@ public class ChatService {
     @PreAuthorize("@chatSecurity.canManageChatWithId(#chatId, authentication)")
     public Integer getMessagesCountForChat(UUID chatId) {
         return messageRepository.countByChat_Id(chatId);
-    }
-
-    private ChatDTO fromChatToDTO(Chat chat) {
-        Message lastMessage = messageRepository.findAllByChat(
-                        chat,
-                        PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "created"))
-                ).stream()
-                .findFirst()
-                .orElse(null);
-        return chatMapper.toDTO(chat, lastMessage);
     }
 }
