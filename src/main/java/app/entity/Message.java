@@ -5,9 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +26,9 @@ import java.util.UUID;
 import static app.config.props.ValidationConstraints.MESSAGE_CONTENT_MAX;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_message_content", columnList = "content")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
